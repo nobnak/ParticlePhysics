@@ -24,7 +24,7 @@ namespace ParticlePhysics {
 		public void Upload(int offset, Vector2[] v) {
 			if (_uploader.count < v.Length) {
 				_uploader.Dispose();
-				_uploader = new ComputeBuffer(v.Length, Marshal.SizeOf(_velocities[0]));
+				_uploader = new ComputeBuffer(ShaderUtil.AlignBufferSize(v.Length), Marshal.SizeOf(_velocities[0]));
 			}
 			_uploader.SetData(v);
 

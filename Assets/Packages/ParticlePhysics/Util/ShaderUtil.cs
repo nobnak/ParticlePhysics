@@ -16,5 +16,8 @@ namespace ParticlePhysics {
 			y = (length - 1) / ShaderConst.MAX_X_THREADS + 1;
 			z = 1;
 		}
+		public static int AlignBufferSize(int length) {
+			return ((length - 1) / ShaderConst.WARP_SIZE + 1) * ShaderConst.WARP_SIZE;
+		}
 	}
 }
