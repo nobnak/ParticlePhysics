@@ -1,0 +1,19 @@
+﻿#define WARP_SIZE 64
+#pragma kernel UploadVelocity
+#pragma kernel UploadPosition
+
+
+
+int uploadOffset;
+int uploadLength;
+
+RWStructuredBuffer<float2> Velocities;
+RWStructuredBuffer<float2> Positions;
+StructuredBuffer<float2> Uploader;
+
+
+
+[numthreads(WARP_SIZE,1,1)]
+void UploadVelocity (uint3 id : SV_DispatchThreadID) {}
+[numthreads(WARP_SIZE,1,1)]
+void UploadPosition (uint3 id : SV_DispatchThreadID) {}
