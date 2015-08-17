@@ -30,11 +30,15 @@ namespace ParticlePhysics {
 			_compute.SetInt(ShaderConst.PROP_UPLOAD_OFFSET, offset);
 			_compute.SetInt(ShaderConst.PROP_UPLOAD_LENGTH, p.Length);
 			_compute.SetBuffer(_kernel, ShaderConst.BUF_UPLOADER, _uploader);
-			_compute.SetBuffer(_kernel, ShaderConst.BUF_VELOCITY, _p0);
+			_compute.SetBuffer(_kernel, ShaderConst.BUF_POSITION, _p0);
 			
 			int x, y, z;
 			ShaderUtil.CalcWorkSize(p.Length, out x, out y, out z);
 			_compute.Dispatch(_kernel, x, y, z);
+		}
+		public Vector2[] Download() {
+			_p0.GetData (_positions);
+			return _positions;
 		}
 		public void SetGlobal() { Shader.SetGlobalBuffer (ShaderConst.BUF_POSITION, _p0); }
 
