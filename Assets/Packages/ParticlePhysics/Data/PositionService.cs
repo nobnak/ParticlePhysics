@@ -36,6 +36,7 @@ namespace ParticlePhysics {
 			ShaderUtil.CalcWorkSize(p.Length, out x, out y, out z);
 			_compute.Dispatch(_kernel, x, y, z);
 		}
+		public void SetGlobal() { Shader.SetGlobalBuffer (ShaderConst.BUF_POSITION, _p0); }
 
 		#region IDisposable implementation
 		public void Dispose () {
