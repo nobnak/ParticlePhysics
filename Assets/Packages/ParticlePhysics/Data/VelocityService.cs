@@ -6,18 +6,20 @@ namespace ParticlePhysics {
 	public class VelocityService : System.IDisposable {
 		public const int INITIAL_CAP = 1024;
 
+		public ComputeBuffer V0 { get; private set; }
+
 		readonly ComputeShader _compute;
-		readonly int _kernel;
+		readonly int _kernelUpload;
 
 		Vector2[] _velocities;
-		ComputeBuffer _v0, _v1, _uploader;
+		ComputeBuffer _uploader;
 
 		public VelocityService(ComputeShader compute, int capasity) {
-			_kernel = compute.FindKernel(ShaderConst.KERNEL_UPLOAD_VELOCITY);
+			_kernelUpload = compute.FindKernel(ShaderConst.KERNEL_UPLOAD_VELOCITY);
 			_compute = compute;
 			_velocities = new Vector2[capasity];
-			_v0 = new ComputeBuffer(capasity, Marshal.SizeOf(_velocities[0]));
-			_v1 = new ComputeBuffer(capasity, Marshal.SizeOf(_velocities[0]));
+			V0 = new ComputeBuffer(capasity, Marshal.SizeOf(_velocities[0]));
+			V0.SetData(_velocities);
 			_uploader = new ComputeBuffer(INITIAL_CAP, Marshal.SizeOf(_velocities[0]));
 		}
 
@@ -30,20 +32,23 @@ namespace ParticlePhysics {
 
 			_compute.SetInt(ShaderConst.PROP_UPLOAD_OFFSET, offset);
 			_compute.SetInt(ShaderConst.PROP_UPLOAD_LENGTH, v.Length);
-			_compute.SetBuffer(_kernel, ShaderConst.BUF_UPLOADER, _uploader);
-			_compute.SetBuffer(_kernel, ShaderConst.BUF_VELOCITY, _v0);
+			_compute.SetBuffer(_kernelUpload, ShaderConst.BUF_UPLOADER, _uploader);
+			_compute.SetBuffer(_kernelUpload, ShaderConst.BUF_VELOCITY, V0);
 
 			int x, y, z;
 			ShaderUtil.CalcWorkSize(v.Length, out x, out y, out z);
-			_compute.Dispatch(_kernel, x, y, z);
+			_compute.Dispatch(_kernelUpload, x, y, z);
 		}
+		public Vector2[] Download() {
+			V0.GetData (_velocities);
+			return _velocities;
+		}
+		public void SetGlobal() { Shader.SetGlobalBuffer (ShaderConst.BUF_VELOCITY, V0); }
 
 		#region IDisposable implementation
 		public void Dispose () {
-			if (_v0 != null)
-				_v0.Dispose();
-			if (_v1 != null)
-				_v1.Dispose();
+			if (V0 != null)
+				V0.Dispose();
 			if (_uploader != null)
 				_uploader.Dispose();
 		}

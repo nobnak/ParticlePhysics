@@ -9,12 +9,12 @@ namespace ParticlePhysics {
 			if (length <= ShaderConst.MAX_X_THREADS) {
 				x = (length - 1) / ShaderConst.WARP_SIZE + 1;
 				y = z = 1;
-				return;
+			} else {
+				x = ShaderConst.MAX_THREAD_GROUPS;
+				y = (length - 1) / ShaderConst.MAX_X_THREADS + 1;
+				z = 1;
 			}
-
-			x = ShaderConst.MAX_THREAD_GROUPS;
-			y = (length - 1) / ShaderConst.MAX_X_THREADS + 1;
-			z = 1;
+			//Debug.LogFormat("WorkSize {0}x{1}x{2}", x, y, z);
 		}
 		public static int AlignBufferSize(int length) {
 			return ((length - 1) / ShaderConst.WARP_SIZE + 1) * ShaderConst.WARP_SIZE;

@@ -3,9 +3,11 @@
 #define MAX_X_THREADS (WARP_SIZE * MAX_THREAD_GROUPS)
 #pragma kernel UploadVelocity
 #pragma kernel UploadPosition
+#pragma kernel SimulatePosition
 
 
 
+float dt;
 int uploadOffset;
 int uploadLength;
 RWStructuredBuffer<float2> Velocities;
@@ -16,17 +18,28 @@ StructuredBuffer<float2> Uploader;
 
 [numthreads(WARP_SIZE,1,1)]
 void UploadVelocity (uint3 id : SV_DispatchThreadID) {
-
+	uint velocitiesCapasity, stride;
+	Velocities.GetDimensions(velocitiesCapasity, stride);
+	
+	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
+	uint j = (i + uploadOffset) % velocitiesCapasity;
+	if (i >= (uint)uploadLength)
+		return;
+	Velocities[j] = Uploader[i];
 }
 [numthreads(WARP_SIZE,1,1)]
 void UploadPosition (uint3 id : SV_DispatchThreadID) {	
-	uint uploaderCapasity, positionsCapasity, stride;
-	Uploader.GetDimensions(uploaderCapasity, stride);
+	uint positionsCapasity, stride;
 	Positions.GetDimensions(positionsCapasity, stride);
 	
-	uint i = id.x + id.y * MAX_X_THREADS;
+	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
 	uint j = (i + uploadOffset) % positionsCapasity;
 	if (i >= (uint)uploadLength)
 		return;
 	Positions[j] = Uploader[i];
+}
+[numthreads(WARP_SIZE,1,1)]
+void SimulatePosition(uint3 id : SV_DispatchThreadID) {
+	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
+	Positions[i] += dt * Velocities[i];
 }

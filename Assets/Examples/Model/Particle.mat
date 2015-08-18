@@ -6,7 +6,7 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: First
+  m_Name: Particle
   m_Shader: {fileID: 4800000, guid: 0f5ee9da2c600cf46a0e73dd6c8d09a9, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 5
@@ -29,6 +29,10 @@ Material:
       data:
         first:
           name: _Metallic
+        second: 0
+      data:
+        first:
+          name: _Id
         second: 0
     m_Colors:
       data:

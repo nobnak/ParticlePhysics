@@ -9,9 +9,11 @@ namespace ParticlePhysics {
 
 		public const string KERNEL_UPLOAD_VELOCITY = "UploadVelocity";
 		public const string KERNEL_UPLOAD_POSITION = "UploadPosition";
+		public const string KERNEL_SIMULATE_POSITION = "SimulatePosition";
 
 		public const string PROP_UPLOAD_OFFSET = "uploadOffset";
 		public const string PROP_UPLOAD_LENGTH = "uploadLength";
+		public const string PROP_DELTA_TIME = "dt";
 
 		public const string BUF_VELOCITY = "Velocities";
 		public const string BUF_POSITION = "Positions";

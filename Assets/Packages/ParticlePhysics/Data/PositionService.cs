@@ -6,20 +6,23 @@ namespace ParticlePhysics {
 	public class PositionService : System.IDisposable {
 		public const int INITIAL_CAP = 1024;
 
+		public ComputeBuffer P0 { get; private set; }
+
 		readonly ComputeShader _compute;
-		readonly int _kernel;
+		readonly int _kernelUpload;
 
 		Vector2[] _positions;
-		ComputeBuffer _p0, _p1, _uploader;
+		ComputeBuffer _uploader;
 
 		public PositionService(ComputeShader compute, int capasity) {
-			_kernel = compute.FindKernel(ShaderConst.KERNEL_UPLOAD_POSITION);
+			_kernelUpload = compute.FindKernel(ShaderConst.KERNEL_UPLOAD_POSITION);
 			_compute = compute;
 			_positions = new Vector2[capasity];
-			_p0 = new ComputeBuffer(capasity, Marshal.SizeOf(_positions[0]));
-			_p1 = new ComputeBuffer(capasity, Marshal.SizeOf(_positions[0]));
+			P0 = new ComputeBuffer(capasity, Marshal.SizeOf(_positions[0]));
+			P0.SetData(_positions);
 			_uploader = new ComputeBuffer(INITIAL_CAP, Marshal.SizeOf(_positions[0]));
 		}		
+
 		public void Upload(int offset, Vector2[] p) {
 			if (_uploader.count < p.Length) {
 				_uploader.Dispose();
@@ -29,25 +32,23 @@ namespace ParticlePhysics {
 			
 			_compute.SetInt(ShaderConst.PROP_UPLOAD_OFFSET, offset);
 			_compute.SetInt(ShaderConst.PROP_UPLOAD_LENGTH, p.Length);
-			_compute.SetBuffer(_kernel, ShaderConst.BUF_UPLOADER, _uploader);
-			_compute.SetBuffer(_kernel, ShaderConst.BUF_POSITION, _p0);
+			_compute.SetBuffer(_kernelUpload, ShaderConst.BUF_UPLOADER, _uploader);
+			_compute.SetBuffer(_kernelUpload, ShaderConst.BUF_POSITION, P0);
 			
 			int x, y, z;
 			ShaderUtil.CalcWorkSize(p.Length, out x, out y, out z);
-			_compute.Dispatch(_kernel, x, y, z);
+			_compute.Dispatch(_kernelUpload, x, y, z);
 		}
 		public Vector2[] Download() {
-			_p0.GetData (_positions);
+			P0.GetData (_positions);
 			return _positions;
 		}
-		public void SetGlobal() { Shader.SetGlobalBuffer (ShaderConst.BUF_POSITION, _p0); }
+		public void SetGlobal() { Shader.SetGlobalBuffer (ShaderConst.BUF_POSITION, P0); }
 
 		#region IDisposable implementation
 		public void Dispose () {
-			if (_p0 != null)
-				_p0.Dispose();
-			if (_p1 != null)
-				_p1.Dispose();
+			if (P0 != null)
+				P0.Dispose();
 			if (_uploader != null)
 				_uploader.Dispose();
 		}

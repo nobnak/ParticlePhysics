@@ -28,8 +28,8 @@ public class First : MonoBehaviour {
 			var inst = (GameObject)Instantiate(particlefab);
 			inst.transform.SetParent(transform, false);
 			var mat = inst.GetComponent<Renderer>().material;
-			mat.SetInt(PROP_ID, header);
-			_positions.Upload(header, new Vector2[]{ new Vector2(header, 0f) });
+			mat.SetInt(PROP_ID, header % capasity);
+			_positions.Upload(header, new Vector2[]{ new Vector2(0.2f * header, 0f) });
 			header++;
 		}
 		if (Input.GetKeyDown (keyRead)) {
