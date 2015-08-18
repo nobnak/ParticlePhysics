@@ -16,11 +16,13 @@ public class Second : MonoBehaviour {
 
 	PositionService _positions;
 	VelocityService _velocities;
+	VelocitySimulation _velSimulation;
 	PositionSimulation _posSimulation;
 
 	void Start () {
 		_positions = new PositionService(compute, capasity);
 		_velocities = new VelocityService(compute, capasity);
+		_velSimulation = new VelocitySimulation(compute, _velocities);
 		_posSimulation = new PositionSimulation(compute, _velocities, _positions);
 	}
 	void OnDestroy() {
@@ -28,6 +30,8 @@ public class Second : MonoBehaviour {
 			_positions.Dispose();
 		if (_velocities != null)
 			_velocities.Dispose();
+		if (_velSimulation != null)
+			_velSimulation.Dispose();
 		if (_posSimulation != null)
 			_posSimulation.Dispose();
 	}
@@ -38,7 +42,7 @@ public class Second : MonoBehaviour {
 			inst.transform.SetParent(transform, false);
 			var mat = inst.GetComponent<Renderer>().material;
 			mat.SetInt(PROP_ID, header % capasity);
-			_velocities.Upload(header, new Vector2[]{ new Vector2(0f, -1f) });
+			_velocities.Upload(header, new Vector2[]{ new Vector2(0f, 0f) });
 			_positions.Upload(header, new Vector2[]{ new Vector2(0.2f * header, header) });
 			header++;
 		}
@@ -57,6 +61,7 @@ public class Second : MonoBehaviour {
 			Debug.Log(buf);
 		}
 
+		_velSimulation.Simulate(Time.deltaTime);
 		_posSimulation.Simulate(Time.deltaTime);
 
 		_positions.SetGlobal();

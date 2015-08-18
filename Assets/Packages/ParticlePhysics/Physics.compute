@@ -1,11 +1,15 @@
 ﻿#define WARP_SIZE 64
 #define MAX_THREAD_GROUPS 1024
 #define MAX_X_THREADS (WARP_SIZE * MAX_THREAD_GROUPS)
+#define G_CONST -9.81
 #pragma kernel UploadVelocity
 #pragma kernel UploadPosition
+#pragma kernel SimulateVelocity
 #pragma kernel SimulatePosition
 
 
+
+static const float2 G = float2(0, G_CONST);
 
 float dt;
 int uploadOffset;
@@ -37,6 +41,11 @@ void UploadPosition (uint3 id : SV_DispatchThreadID) {
 	if (i >= (uint)uploadLength)
 		return;
 	Positions[j] = Uploader[i];
+}
+[numthreads(WARP_SIZE,1,1)]
+void SimulateVelocity(uint3 id : SV_DispatchThreadID) {
+	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
+	Velocities[i] += dt * G;
 }
 [numthreads(WARP_SIZE,1,1)]
 void SimulatePosition(uint3 id : SV_DispatchThreadID) {
