@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace ParticlePhysics {
 	public class VelocityService : System.IDisposable {
-		public const int INITIAL_CAP = 1024;
+		public const int INITIAL_CAP = 2 * ShaderConst.WARP_SIZE;
 
 		public readonly int SimSizeX, SimSizeY, SimSizeZ;
 		public ComputeBuffer V0 { get; private set; }

@@ -26,6 +26,11 @@ namespace ParticlePhysics {
 			compute.SetInt(ShaderConst.PROP_WALL_COUNT, _walls.Count);
 			compute.SetBuffer(kernel, ShaderConst.BUF_WALL, Walls);
 		}
+		public Wall[] Download() {
+			var walls = new Wall[Walls.count];
+			Walls.GetData(walls);
+			return walls;
+		}
 
 		#region IDisposable implementation
 		public void Dispose () {
@@ -42,6 +47,10 @@ namespace ParticlePhysics {
 			public float dt;
 			public float w;
 			public float h;
+
+			public override string ToString () {
+				return string.Format("n={0},Dn={1},t={2},Dt={3},WxH={4}x{5}", n, dn, t, dt, w, h);
+			}
 		}
 	}
 }
