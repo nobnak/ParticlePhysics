@@ -4,8 +4,10 @@
 #define G_CONST -9.81
 #pragma kernel UploadVelocity
 #pragma kernel UploadPosition
+#pragma kernel UploadLife
 #pragma kernel SimulateVelocity
 #pragma kernel SimulatePosition
+#pragma kernel SimulateLife
 #pragma kernel SolveWallCollision
 
 
@@ -27,7 +29,9 @@ int uploadLength;
 int wallCount;
 RWStructuredBuffer<float2> Velocities;
 RWStructuredBuffer<float2> Positions;
+RWStructuredBuffer<float> Lifes;
 StructuredBuffer<float2> Uploader;
+StructuredBuffer<float> UploaderFloat;
 StructuredBuffer<Wall> Walls;
 
 
@@ -55,6 +59,17 @@ void UploadPosition (uint3 id : SV_DispatchThreadID) {
 	Positions[j] = Uploader[i];
 }
 [numthreads(WARP_SIZE,1,1)]
+void UploadLife(uint3 id : SV_DispatchThreadID) {
+	uint lifesCapacity, stride;
+	Lifes.GetDimensions(lifesCapacity, stride);
+	
+	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
+	uint j = (i + uploadOffset) % lifesCapacity;
+	if (i >= (uint)uploadLength)
+		return;
+	Lifes[j] = UploaderFloat[i];
+}
+[numthreads(WARP_SIZE,1,1)]
 void SimulateVelocity(uint3 id : SV_DispatchThreadID) {
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
 	Velocities[i] += dt * G;
@@ -63,6 +78,11 @@ void SimulateVelocity(uint3 id : SV_DispatchThreadID) {
 void SimulatePosition(uint3 id : SV_DispatchThreadID) {
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
 	Positions[i] += dt * Velocities[i];
+}
+[numthreads(WARP_SIZE,1,1)]
+void SimulateLife(uint3 id : SV_DispatchThreadID) {
+	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
+	Lifes[i] = max(0.0, Lifes[i] - dt);
 }
 [numthreads(WARP_SIZE,1,1)]
 void SolveWallCollision(uint3 id : SV_DispatchThreadID) {

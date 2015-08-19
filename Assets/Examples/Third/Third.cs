@@ -7,7 +7,7 @@ public class Third : MonoBehaviour {
 	public const string PROP_ID = "_Id";
 
 	public int header = 0;
-	public int capasity = 1024;
+	public int capacity = 1024;
 	public ComputeShader compute;
 	public GameObject particlefab;
 	public KeyCode keyAdd;
@@ -16,12 +16,14 @@ public class Third : MonoBehaviour {
 
 	PositionService _positions;
 	VelocityService _velocities;
+	LifeService _lifes;
 	VelocitySimulation _velSimulation;
 	PositionSimulation _posSimulation;
 
 	void Start () {
-		_positions = new PositionService(compute, capasity);
-		_velocities = new VelocityService(compute, capasity);
+		_positions = new PositionService(compute, capacity);
+		_velocities = new VelocityService(compute, capacity);
+		_lifes = new LifeService(compute, capacity);
 		_velSimulation = new VelocitySimulation(compute, _velocities);
 		_posSimulation = new PositionSimulation(compute, _velocities, _positions);
 	}
@@ -30,6 +32,8 @@ public class Third : MonoBehaviour {
 			_positions.Dispose();
 		if (_velocities != null)
 			_velocities.Dispose();
+		if (_lifes != null)
+			_lifes.Dispose();
 		if (_velSimulation != null)
 			_velSimulation.Dispose();
 		if (_posSimulation != null)
@@ -41,9 +45,10 @@ public class Third : MonoBehaviour {
 			var inst = (GameObject)Instantiate(particlefab);
 			inst.transform.SetParent(transform, false);
 			var mat = inst.GetComponent<Renderer>().material;
-			mat.SetInt(PROP_ID, header % capasity);
+			mat.SetInt(PROP_ID, header % capacity);
 			_velocities.Upload(header, new Vector2[]{ new Vector2(0f, 0f) });
 			_positions.Upload(header, new Vector2[]{ new Vector2(0.2f * header, 0f) });
+			_lifes.Upload(header, new float[]{ 10f });
 			header++;
 		}
 		if (Input.GetKeyDown (keyReadPositions)) {
@@ -63,7 +68,9 @@ public class Third : MonoBehaviour {
 
 		_velSimulation.Simulate(Time.deltaTime);
 		_posSimulation.Simulate(Time.deltaTime);
+		_lifes.Simulate(Time.deltaTime);
 
 		_positions.SetGlobal();
+		_lifes.SetGlobal();
 	}
 }

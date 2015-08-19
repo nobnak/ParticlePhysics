@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Runtime.InteropServices;
 
@@ -6,6 +6,7 @@ namespace ParticlePhysics {
 	public class PositionService : System.IDisposable {
 		public const int INITIAL_CAP = 1024;
 
+		public readonly int SimSizeX, SimSizeY, SimSizeZ;
 		public ComputeBuffer P0 { get; private set; }
 
 		readonly ComputeShader _compute;
@@ -14,13 +15,14 @@ namespace ParticlePhysics {
 		Vector2[] _positions;
 		ComputeBuffer _uploader;
 
-		public PositionService(ComputeShader compute, int capasity) {
+		public PositionService(ComputeShader compute, int capacity) {
 			_kernelUpload = compute.FindKernel(ShaderConst.KERNEL_UPLOAD_POSITION);
 			_compute = compute;
-			_positions = new Vector2[capasity];
-			P0 = new ComputeBuffer(capasity, Marshal.SizeOf(_positions[0]));
+			_positions = new Vector2[capacity];
+			P0 = new ComputeBuffer(capacity, Marshal.SizeOf(_positions[0]));
 			P0.SetData(_positions);
 			_uploader = new ComputeBuffer(INITIAL_CAP, Marshal.SizeOf(_positions[0]));
+			ShaderUtil.CalcWorkSize(capacity, out SimSizeX, out SimSizeY, out SimSizeZ);
 		}		
 
 		public void Upload(int offset, Vector2[] p) {
@@ -32,7 +34,7 @@ namespace ParticlePhysics {
 			
 			_compute.SetInt(ShaderConst.PROP_UPLOAD_OFFSET, offset);
 			_compute.SetInt(ShaderConst.PROP_UPLOAD_LENGTH, p.Length);
-			_compute.SetBuffer(_kernelUpload, ShaderConst.BUF_UPLOADER, _uploader);
+			_compute.SetBuffer(_kernelUpload, ShaderConst.BUF_UPLOADER_FLOAT2, _uploader);
 			_compute.SetBuffer(_kernelUpload, ShaderConst.BUF_POSITION, P0);
 			
 			int x, y, z;

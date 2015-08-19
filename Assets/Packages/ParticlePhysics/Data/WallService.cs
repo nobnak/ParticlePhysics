@@ -7,6 +7,7 @@ namespace ParticlePhysics {
 	public class WallService : System.IDisposable {
 		public readonly int capacity;
 
+		public int Count { get { return _walls.Count; } }
 		public ComputeBuffer Walls { get; private set; }
 
 		List<Wall> _walls;
