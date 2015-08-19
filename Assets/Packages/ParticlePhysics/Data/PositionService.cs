@@ -44,6 +44,9 @@ namespace ParticlePhysics {
 			return _positions;
 		}
 		public void SetGlobal() { Shader.SetGlobalBuffer (ShaderConst.BUF_POSITION, P0); }
+		public void SetBuffer(ComputeShader compute, int kernel) {
+			compute.SetBuffer(kernel, ShaderConst.BUF_POSITION, P0);
+		}
 
 		#region IDisposable implementation
 		public void Dispose () {

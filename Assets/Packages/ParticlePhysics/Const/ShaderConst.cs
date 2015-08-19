@@ -11,13 +11,16 @@ namespace ParticlePhysics {
 		public const string KERNEL_UPLOAD_POSITION = "UploadPosition";
 		public const string KERNEL_SIMULATE_VELOCITY = "SimulateVelocity";
 		public const string KERNEL_SIMULATE_POSITION = "SimulatePosition";
+		public const string KERNEL_SOLVE_WALL_COLLISION = "SolveWallCollision";
 
 		public const string PROP_UPLOAD_OFFSET = "uploadOffset";
 		public const string PROP_UPLOAD_LENGTH = "uploadLength";
 		public const string PROP_DELTA_TIME = "dt";
+		public const string PROP_WALL_COUNT = "wallCount";
 
 		public const string BUF_VELOCITY = "Velocities";
 		public const string BUF_POSITION = "Positions";
 		public const string BUF_UPLOADER = "Uploader";
+		public const string BUF_WALL = "Walls";
 	}
 }

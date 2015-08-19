@@ -44,6 +44,9 @@ namespace ParticlePhysics {
 			return _velocities;
 		}
 		public void SetGlobal() { Shader.SetGlobalBuffer (ShaderConst.BUF_VELOCITY, V0); }
+		public void SetBuffer(ComputeShader compute, int kernel) {
+			compute.SetBuffer(kernel, ShaderConst.BUF_VELOCITY, V0);
+		}
 
 		#region IDisposable implementation
 		public void Dispose () {

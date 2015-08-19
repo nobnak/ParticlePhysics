@@ -6,17 +6,29 @@
 #pragma kernel UploadPosition
 #pragma kernel SimulateVelocity
 #pragma kernel SimulatePosition
+#pragma kernel SolveWallCollision
 
 
 
 static const float2 G = float2(0, G_CONST);
 
+struct Wall {
+	float2 n;
+	float2 t;
+	float dn;
+	float dt;
+	float w;
+	float h;
+};
+
 float dt;
 int uploadOffset;
 int uploadLength;
+int wallCount;
 RWStructuredBuffer<float2> Velocities;
 RWStructuredBuffer<float2> Positions;
 StructuredBuffer<float2> Uploader;
+StructuredBuffer<Wall> Walls;
 
 
 
@@ -51,4 +63,9 @@ void SimulateVelocity(uint3 id : SV_DispatchThreadID) {
 void SimulatePosition(uint3 id : SV_DispatchThreadID) {
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
 	Positions[i] += dt * Velocities[i];
+}
+[numthreads(WARP_SIZE,1,1)]
+void SolveWallCollision(uint3 id : SV_DispatchThreadID) {
+	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
+	
 }
