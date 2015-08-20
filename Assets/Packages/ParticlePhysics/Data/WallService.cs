@@ -7,29 +7,46 @@ namespace ParticlePhysics {
 	public class WallService : System.IDisposable {
 		public readonly int capacity;
 
-		public int Count { get { return _walls.Count; } }
+		public int Count { get { return _colliders.Count; } }
 		public ComputeBuffer Walls { get; private set; }
 
-		List<Wall> _walls;
+		List<Transform> _colliders;
+		Wall[] _walls;
 
 		public WallService(int capacity) {
 			this.capacity = capacity;
-			_walls = new List<Wall>(capacity);
+			_colliders = new List<Transform>(capacity);
+			_walls = new Wall[capacity];
 			Walls = new ComputeBuffer(capacity, Marshal.SizeOf(typeof(Wall)));
-			Walls.SetData(_walls.ToArray());
+			Walls.SetData(_walls);
 		}
-		public void Add(Wall w) {
-			_walls.Add(w);
-			Walls.SetData(_walls.ToArray());
+		public void Add(Transform collider) {
+			_colliders.Add(collider);
+		}
+		public void Update() {
+			for (var i = 0; i < _colliders.Count; i++)
+				_walls[i] = Convert(_colliders[i]);
+			Walls.SetData(_walls);
 		}
 		public void SetBuffer(ComputeShader compute, int kernel) {
-			compute.SetInt(ShaderConst.PROP_WALL_COUNT, _walls.Count);
+			compute.SetInt(ShaderConst.PROP_WALL_COUNT, _colliders.Count);
 			compute.SetBuffer(kernel, ShaderConst.BUF_WALL, Walls);
 		}
 		public Wall[] Download() {
 			var walls = new Wall[Walls.count];
 			Walls.GetData(walls);
 			return walls;
+		}
+
+		public static Wall Convert(Transform collider) {
+			var n = ((Vector2)collider.up).normalized;
+			var t = ((Vector2)collider.right).normalized;
+			var p = (Vector2)collider.position;
+			var w = collider.localScale.x * 0.5f;
+			var h = collider.localScale.y * 0.5f;
+			return new WallService.Wall () {
+				n = n, t = t, dn = Vector2.Dot (n, p), dt = Vector2.Dot (t, p), w = w, h = h
+			};
 		}
 
 		#region IDisposable implementation

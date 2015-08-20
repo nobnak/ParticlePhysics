@@ -11,6 +11,7 @@ public class Third : MonoBehaviour {
 	public ComputeShader compute;
 	public GameObject particlefab;
 	public Transform[] wallColliders;
+	public ConstantService.ConstantData constants;
 	public KeyCode keyAdd = KeyCode.A;
 	public KeyCode keyReadVelocities = KeyCode.V;
 	public KeyCode keyReadPositions = KeyCode.P;
@@ -20,6 +21,7 @@ public class Third : MonoBehaviour {
 	VelocityService _velocities;
 	LifeService _lifes;
 	WallService _walls;
+	ConstantService _constants;
 	VelocitySimulation _velSimulation;
 	PositionSimulation _posSimulation;
 	WallCollisionSolver _wallSolver;
@@ -28,6 +30,7 @@ public class Third : MonoBehaviour {
 		_positions = new PositionService(compute, capacity);
 		_velocities = new VelocityService(compute, capacity);
 		_lifes = new LifeService(compute, capacity);
+		_constants = new ConstantService(constants);
 		_velSimulation = new VelocitySimulation(compute, _velocities);
 		_posSimulation = new PositionSimulation(compute, _velocities, _positions);
 
@@ -41,6 +44,8 @@ public class Third : MonoBehaviour {
 			_velocities.Dispose();
 		if (_lifes != null)
 			_lifes.Dispose();
+		if (_constants != null)
+			_constants.Dispose();
 		if (_walls != null)
 			_walls.Dispose();
 		if (_velSimulation != null)
@@ -83,6 +88,7 @@ public class Third : MonoBehaviour {
 			Debug.Log(buf);
 		}
 
+		_constants.SetConstants(compute);
 		_velSimulation.Simulate(Time.deltaTime);
 		_wallSolver.Solve();
 		_posSimulation.Simulate(Time.deltaTime);
@@ -94,17 +100,8 @@ public class Third : MonoBehaviour {
 
 	static WallService BuildWalls(Transform[] wallColliders) {
 		var walls = new WallService (wallColliders.Length);
-		foreach (var collider in wallColliders) {
-			var n = ((Vector2)collider.up).normalized;
-			var t = ((Vector2)collider.right).normalized;
-			var p = (Vector2)collider.position;
-			var w = collider.localScale.x * 0.5f;
-			var h = collider.localScale.y * 0.5f;
-			var wall = new WallService.Wall () {
-				n = n, t = t, dn = Vector2.Dot (n, p), dt = Vector2.Dot (t, p), w = w, h = h
-			};
-			walls.Add (wall);
-		}
+		foreach (var collider in wallColliders)
+			walls.Add (collider);
 		return walls;
 	}
 }
