@@ -8,6 +8,7 @@ namespace ParticlePhysics {
 
 		public readonly int SimSizeX, SimSizeY, SimSizeZ;
 		public ComputeBuffer V0 { get; private set; }
+		public ComputeBuffer V1 { get; private set; }
 
 		readonly ComputeShader _compute;
 		readonly int _kernelUpload;
@@ -19,8 +20,10 @@ namespace ParticlePhysics {
 			_kernelUpload = compute.FindKernel(ShaderConst.KERNEL_UPLOAD_VELOCITY);
 			_compute = compute;
 			_velocities = new Vector2[capacity];
-			V0 = new ComputeBuffer(capacity, Marshal.SizeOf(_velocities[0]));
+			V0 = new ComputeBuffer(capacity, Marshal.SizeOf(typeof(Vector2)));
+			V1 = new ComputeBuffer(capacity, Marshal.SizeOf(typeof(Vector2)));
 			V0.SetData(_velocities);
+			V1.SetData(_velocities);
 			_uploader = new ComputeBuffer(INITIAL_CAP, Marshal.SizeOf(_velocities[0]));
 			ShaderUtil.CalcWorkSize(capacity, out SimSizeX, out SimSizeY, out SimSizeZ);
 		}
@@ -35,7 +38,7 @@ namespace ParticlePhysics {
 			_compute.SetInt(ShaderConst.PROP_UPLOAD_OFFSET, offset);
 			_compute.SetInt(ShaderConst.PROP_UPLOAD_LENGTH, v.Length);
 			_compute.SetBuffer(_kernelUpload, ShaderConst.BUF_UPLOADER_FLOAT2, _uploader);
-			_compute.SetBuffer(_kernelUpload, ShaderConst.BUF_VELOCITY, V0);
+			_compute.SetBuffer(_kernelUpload, ShaderConst.BUF_VELOCITY_CURR, V0);
 
 			int x, y, z;
 			ShaderUtil.CalcWorkSize(v.Length, out x, out y, out z);
@@ -45,15 +48,19 @@ namespace ParticlePhysics {
 			V0.GetData (_velocities);
 			return _velocities;
 		}
-		public void SetGlobal() { Shader.SetGlobalBuffer (ShaderConst.BUF_VELOCITY, V0); }
+		public void SetGlobal() { Shader.SetGlobalBuffer (ShaderConst.BUF_VELOCITY_CURR, V0); }
 		public void SetBuffer(ComputeShader compute, int kernel) {
-			compute.SetBuffer(kernel, ShaderConst.BUF_VELOCITY, V0);
+			compute.SetBuffer(kernel, ShaderConst.BUF_VELOCITY_CURR, V0);
+			compute.SetBuffer(kernel, ShaderConst.BUF_VELOCITY_NEXT, V1);
 		}
+		public void Swap() { var tmp = V0; V0 = V1; V1 = tmp; }
 
 		#region IDisposable implementation
 		public void Dispose () {
 			if (V0 != null)
 				V0.Dispose();
+			if (V1 != null)
+				V1.Dispose();
 			if (_uploader != null)
 				_uploader.Dispose();
 		}

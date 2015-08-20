@@ -22,6 +22,7 @@ namespace ParticlePhysics {
 			_positions.SetBuffer(_compute, _kernel);
 			_walls.SetBuffer(_compute, _kernel);
 			_compute.Dispatch(_kernel, _velocities.SimSizeX, _velocities.SimSizeY, _velocities.SimSizeZ);
+			_velocities.Swap();
 		}
 
 		#region IDisposable implementation

@@ -24,11 +24,14 @@ struct Wall {
 };
 
 static const float particleRadius = 0.1;
+static const float particleMass = 1;
 float dt;
+float elastics;
 int uploadOffset;
 int uploadLength;
 int wallCount;
-RWStructuredBuffer<float2> Velocities;
+RWStructuredBuffer<float2> VelocitiesCurr;
+RWStructuredBuffer<float2> VelocitiesNext;
 RWStructuredBuffer<float2> Positions;
 RWStructuredBuffer<float> Lifes;
 StructuredBuffer<float2> Uploader;
@@ -40,13 +43,13 @@ StructuredBuffer<Wall> Walls;
 [numthreads(WARP_SIZE,1,1)]
 void UploadVelocity (uint3 id : SV_DispatchThreadID) {
 	uint velocitiesCapasity, stride;
-	Velocities.GetDimensions(velocitiesCapasity, stride);
+	VelocitiesCurr.GetDimensions(velocitiesCapasity, stride);
 	
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
 	uint j = (i + uploadOffset) % velocitiesCapasity;
 	if (i >= (uint)uploadLength)
 		return;
-	Velocities[j] = Uploader[i];
+	VelocitiesCurr[j] = Uploader[i];
 }
 [numthreads(WARP_SIZE,1,1)]
 void UploadPosition (uint3 id : SV_DispatchThreadID) {	
@@ -73,12 +76,12 @@ void UploadLife(uint3 id : SV_DispatchThreadID) {
 [numthreads(WARP_SIZE,1,1)]
 void SimulateVelocity(uint3 id : SV_DispatchThreadID) {
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
-	Velocities[i] += dt * G;
+	VelocitiesNext[i] = VelocitiesCurr[i] + dt * G;
 }
 [numthreads(WARP_SIZE,1,1)]
 void SimulatePosition(uint3 id : SV_DispatchThreadID) {
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
-	Positions[i] += dt * Velocities[i];
+	Positions[i] += dt * VelocitiesCurr[i];
 }
 [numthreads(WARP_SIZE,1,1)]
 void SimulateLife(uint3 id : SV_DispatchThreadID) {
@@ -88,15 +91,18 @@ void SimulateLife(uint3 id : SV_DispatchThreadID) {
 [numthreads(WARP_SIZE,1,1)]
 void SolveWallCollision(uint3 id : SV_DispatchThreadID) {
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
-	float2 p = Positions[i];
-	float2 v = Velocities[i];
+	float2 x = Positions[i];
+	float2 v = VelocitiesCurr[i];
 	
+	float2 p = 0;
 	for (int j = 0; j < wallCount; j++) {
 		Wall wall = Walls[j];
 		float v0n = dot(wall.n, v);
-		float dn = dot(wall.n, p) - wall.dn;
+		float dn = dot(wall.n, x) - wall.dn;
 		if (v0n >= 0 || abs(dn) > (wall.h + particleRadius))
 			continue;
-		
+		p += (particleMass * (1.0 + elastics) * v0n) * wall.n;
 	}
+	
+	VelocitiesNext[i] = v - p / particleMass;
 }

@@ -20,7 +20,8 @@ namespace ParticlePhysics {
 		public const string PROP_DELTA_TIME = "dt";
 		public const string PROP_WALL_COUNT = "wallCount";
 
-		public const string BUF_VELOCITY = "Velocities";
+		public const string BUF_VELOCITY_CURR = "VelocitiesCurr";
+		public const string BUF_VELOCITY_NEXT = "VelocitiesNext";
 		public const string BUF_POSITION = "Positions";
 		public const string BUF_UPLOADER_FLOAT2 = "Uploader";
 		public const string BUF_UPLOADER_FLOAT = "UploaderFloat";

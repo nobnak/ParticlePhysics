@@ -35,7 +35,7 @@ public class First : MonoBehaviour {
 			var mat = inst.GetComponent<Renderer>().material;
 			mat.SetInt(PROP_ID, header % capacity);
 			_positions.Upload(header, new Vector2[]{ new Vector2(0.2f * header, 0f) });
-			_lifes.Upload(header, new float[]{ 10f });
+			_lifes.Upload(header, new float[]{ 3f });
 			header++;
 		}
 		if (Input.GetKeyDown (keyReadPosition)) {

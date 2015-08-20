@@ -17,6 +17,7 @@ namespace ParticlePhysics {
 			_compute.SetFloat(ShaderConst.PROP_DELTA_TIME, Time.deltaTime);
 			_velocities.SetBuffer(_compute, _kernelSimulate);
 			_compute.Dispatch(_kernelSimulate, _velocities.SimSizeX, _velocities.SimSizeY, _velocities.SimSizeZ);
+			_velocities.Swap();
 		}
 		#region IDisposable implementation
 		public void Dispose () {
