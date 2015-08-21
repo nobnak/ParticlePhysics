@@ -99,7 +99,8 @@ void SolveWallCollision(uint3 id : SV_DispatchThreadID) {
 		Wall wall = Walls[j];
 		float v0n = dot(wall.n, v);
 		float dn = dot(wall.n, x) - wall.dn;
-		if (v0n >= 0 || abs(dn) > (wall.h + particleRadius))
+		float dt = dot(wall.t, x) - wall.dt;
+		if (v0n >= 0 || abs(dn) > (wall.h + particleRadius) || abs(dt) > (wall.w + particleRadius))
 			continue;
 		p += (particleMass * (1.0 + elastics) * v0n) * wall.n;
 	}
