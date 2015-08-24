@@ -26,7 +26,7 @@ struct Wall {
 
 static const float particleMass = 1;
 static const float impulsiveMassCoeff = particleMass / (particleMass + particleMass);
-static const float distanceEpsilon = 0.1;
+static const float distanceEpsilon = 0.01;
 float dt;
 float elastics;
 float particleRadius;

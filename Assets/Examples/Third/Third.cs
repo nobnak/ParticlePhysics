@@ -10,6 +10,7 @@ public class Third : MonoBehaviour {
 	public int capacity = 1024;
 	public ComputeShader compute;
 	public GameObject particlefab;
+	public Transform emitter;
 	public Transform[] wallColliders;
 	public ConstantService.ConstantData constants;
 	public KeyCode keyAdd = KeyCode.A;
@@ -69,7 +70,7 @@ public class Third : MonoBehaviour {
 			var mat = inst.GetComponent<Renderer>().material;
 			mat.SetInt(PROP_ID, header % capacity);
 			_velocities.Upload(header, new Vector2[]{ new Vector2(0f, 0f) });
-			_positions.Upload(header, new Vector2[]{ new Vector2(0f, 0f) });
+			_positions.Upload(header, new Vector2[]{ (Vector2)emitter.position });
 			_lifes.Upload(header, new float[]{ 1000f });
 			header++;
 		}
