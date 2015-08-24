@@ -357,7 +357,7 @@ MonoBehaviour:
   - {fileID: 367820084}
   - {fileID: 1057544112}
   constants:
-    elastics: 0
+    elastics: .100000001
   keyAdd: 97
   keyReadVelocities: 118
   keyReadPositions: 112

@@ -9,6 +9,7 @@
 #pragma kernel SimulatePosition
 #pragma kernel SimulateLife
 #pragma kernel SolveWallCollision
+#pragma kernel SolveParticleCollision
 
 
 
@@ -25,6 +26,7 @@ struct Wall {
 
 static const float particleRadius = 0.1;
 static const float particleMass = 1;
+static const float impulsiveMassCoeff = particleMass / (particleMass + particleMass);
 float dt;
 float elastics;
 int uploadOffset;
@@ -76,7 +78,7 @@ void UploadLife(uint3 id : SV_DispatchThreadID) {
 [numthreads(WARP_SIZE,1,1)]
 void SimulateVelocity(uint3 id : SV_DispatchThreadID) {
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
-	VelocitiesNext[i] = VelocitiesCurr[i] + dt * G;
+	VelocitiesNext[i] = 0.99 * (VelocitiesCurr[i] + dt * G);
 }
 [numthreads(WARP_SIZE,1,1)]
 void SimulatePosition(uint3 id : SV_DispatchThreadID) {
@@ -102,8 +104,38 @@ void SolveWallCollision(uint3 id : SV_DispatchThreadID) {
 		float dt = dot(wall.t, x) - wall.dt;
 		if (v0n >= 0 || abs(dn) > (wall.h + particleRadius) || abs(dt) > (wall.w + particleRadius))
 			continue;
-		p += (particleMass * (1.0 + elastics) * v0n) * wall.n;
+		p += ((1.0 + elastics) * v0n) * wall.n;
 	}
 	
-	VelocitiesNext[i] = v - p / particleMass;
+	VelocitiesNext[i] = v - p;
+}
+[numthreads(WARP_SIZE,1,1)]
+void SolveParticleCollision(uint3 id : SV_DispatchThreadID) {
+	uint lifesCapacity, stride;
+	Lifes.GetDimensions(lifesCapacity, stride);
+	
+	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
+	float ti = Lifes[i];
+	float2 xi = Positions[i];
+	float2 vi = VelocitiesCurr[i];
+	if (ti <= 0.0)
+		return;
+	
+	float2 p = 0;
+	float sqrCollRange = 4.0 * particleRadius * particleRadius;
+	for (uint j = 0; j < lifesCapacity; j++) {
+		float tj = Lifes[j];
+		float2 xj = Positions[j];
+		float2 d = xi - xj;
+		float d2 = dot(d, d);
+		if (i == j || tj <= 0.0 || sqrCollRange <= d2)
+			continue;
+		
+		float2 vj = VelocitiesCurr[j];
+		float2 v = vi - vj;
+		float2 n = normalize(d);
+		float v0n = dot(n, v);
+		p += (impulsiveMassCoeff * (1.0 + elastics) * v0n) * n;
+	}
+	VelocitiesNext[i] = vi - p;
 }

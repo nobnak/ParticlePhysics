@@ -13,6 +13,7 @@ public class Third : MonoBehaviour {
 	public Transform[] wallColliders;
 	public ConstantService.ConstantData constants;
 	public KeyCode keyAdd = KeyCode.A;
+	public KeyCode keyReadLifes = KeyCode.L;
 	public KeyCode keyReadVelocities = KeyCode.V;
 	public KeyCode keyReadPositions = KeyCode.P;
 	public KeyCode keyReadWalls = KeyCode.W;
@@ -25,6 +26,7 @@ public class Third : MonoBehaviour {
 	VelocitySimulation _velSimulation;
 	PositionSimulation _posSimulation;
 	WallCollisionSolver _wallSolver;
+	ParticleCollisionSolver _particleSolver;
 
 	void Start () {
 		_positions = new PositionService(compute, capacity);
@@ -33,6 +35,7 @@ public class Third : MonoBehaviour {
 		_constants = new ConstantService(constants);
 		_velSimulation = new VelocitySimulation(compute, _velocities);
 		_posSimulation = new PositionSimulation(compute, _velocities, _positions);
+		_particleSolver = new ParticleCollisionSolver(compute, _velocities, _positions, _lifes);
 
 		_walls = BuildWalls(wallColliders);
 		_wallSolver = new WallCollisionSolver(compute, _velocities, _positions, _walls);
@@ -54,6 +57,8 @@ public class Third : MonoBehaviour {
 			_posSimulation.Dispose();
 		if (_wallSolver != null)
 			_wallSolver.Dispose();
+		if (_particleSolver != null)
+			_particleSolver.Dispose();
 	}
 	
 	void Update () {
@@ -63,8 +68,8 @@ public class Third : MonoBehaviour {
 			var mat = inst.GetComponent<Renderer>().material;
 			mat.SetInt(PROP_ID, header % capacity);
 			_velocities.Upload(header, new Vector2[]{ new Vector2(0f, 0f) });
-			_positions.Upload(header, new Vector2[]{ new Vector2(0.2f * header, 0f) });
-			_lifes.Upload(header, new float[]{ 10f });
+			_positions.Upload(header, new Vector2[]{ new Vector2(0f, 0f) });
+			_lifes.Upload(header, new float[]{ 1000f });
 			header++;
 		}
 		if (Input.GetKeyDown (keyReadPositions)) {
@@ -81,6 +86,12 @@ public class Third : MonoBehaviour {
 			}
 			Debug.Log(buf);
 		}
+		if (Input.GetKeyDown(keyReadLifes)) {
+			var buf = new StringBuilder("Lifes:");
+			foreach (var l in _lifes.Download())
+				buf.AppendFormat("{0},", l);
+			Debug.Log(buf);
+		}
 		if (Input.GetKeyDown(keyReadWalls)) {
 			var buf = new StringBuilder("Walls:");
 			foreach (var w in _walls.Download())
@@ -90,6 +101,7 @@ public class Third : MonoBehaviour {
 
 		_constants.SetConstants(compute);
 		_velSimulation.Simulate(Time.deltaTime);
+		_particleSolver.Solve();
 		_wallSolver.Solve();
 		_posSimulation.Simulate(Time.deltaTime);
 		_lifes.Simulate(Time.deltaTime);

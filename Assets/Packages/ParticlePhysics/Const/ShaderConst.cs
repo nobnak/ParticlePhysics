@@ -14,6 +14,7 @@ namespace ParticlePhysics {
 		public const string KERNEL_SIMULATE_POSITION = "SimulatePosition";
 		public const string KERNEL_SIMULATE_LIFE = "SimulateLife";
 		public const string KERNEL_SOLVE_WALL_COLLISION = "SolveWallCollision";
+		public const string KERNEL_SOLVE_PARTICLE_COLLISION = "SolveParticleCollision";
 
 		public const string PROP_UPLOAD_OFFSET = "uploadOffset";
 		public const string PROP_UPLOAD_LENGTH = "uploadLength";
