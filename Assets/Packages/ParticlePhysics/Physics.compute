@@ -24,11 +24,12 @@ struct Wall {
 	float h;
 };
 
-static const float particleRadius = 0.1;
 static const float particleMass = 1;
 static const float impulsiveMassCoeff = particleMass / (particleMass + particleMass);
+static const float distanceEpsilon = 0.1;
 float dt;
 float elastics;
+float particleRadius;
 int uploadOffset;
 int uploadLength;
 int wallCount;
@@ -78,7 +79,7 @@ void UploadLife(uint3 id : SV_DispatchThreadID) {
 [numthreads(WARP_SIZE,1,1)]
 void SimulateVelocity(uint3 id : SV_DispatchThreadID) {
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
-	VelocitiesNext[i] = 0.99 * (VelocitiesCurr[i] + dt * G);
+	VelocitiesNext[i] = VelocitiesCurr[i] + dt * G;
 }
 [numthreads(WARP_SIZE,1,1)]
 void SimulatePosition(uint3 id : SV_DispatchThreadID) {
@@ -122,19 +123,22 @@ void SolveParticleCollision(uint3 id : SV_DispatchThreadID) {
 		return;
 	
 	float2 p = 0;
-	float sqrCollRange = 4.0 * particleRadius * particleRadius;
+	float sqrCollMaxRange = 4.0 * particleRadius * particleRadius;
+	float sqrCollMinRange = distanceEpsilon * distanceEpsilon;
 	for (uint j = 0; j < lifesCapacity; j++) {
 		float tj = Lifes[j];
 		float2 xj = Positions[j];
 		float2 d = xi - xj;
 		float d2 = dot(d, d);
-		if (i == j || tj <= 0.0 || sqrCollRange <= d2)
+		if (i == j || tj <= 0.0 || sqrCollMaxRange <= d2 || d2 <= sqrCollMinRange)
 			continue;
 		
 		float2 vj = VelocitiesCurr[j];
 		float2 v = vi - vj;
 		float2 n = normalize(d);
 		float v0n = dot(n, v);
+		if (v0n >= 0)
+			continue;
 		p += (impulsiveMassCoeff * (1.0 + elastics) * v0n) * n;
 	}
 	VelocitiesNext[i] = vi - p;

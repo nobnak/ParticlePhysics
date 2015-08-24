@@ -65,6 +65,7 @@ public class Third : MonoBehaviour {
 		if (Input.GetKeyDown(keyAdd)) {
 			var inst = (GameObject)Instantiate(particlefab);
 			inst.transform.SetParent(transform, false);
+			inst.transform.localScale = (2f * constants.radius) * Vector3.one;
 			var mat = inst.GetComponent<Renderer>().material;
 			mat.SetInt(PROP_ID, header % capacity);
 			_velocities.Upload(header, new Vector2[]{ new Vector2(0f, 0f) });
@@ -101,8 +102,10 @@ public class Third : MonoBehaviour {
 
 		_constants.SetConstants(compute);
 		_velSimulation.Simulate(Time.deltaTime);
-		_particleSolver.Solve();
-		_wallSolver.Solve();
+		for(var i = 0; i < 3; i++) {
+			_particleSolver.Solve();
+			_wallSolver.Solve();
+		}
 		_posSimulation.Simulate(Time.deltaTime);
 		_lifes.Simulate(Time.deltaTime);
 

@@ -21,6 +21,7 @@ namespace ParticlePhysics {
 		public const string PROP_DELTA_TIME = "dt";
 		public const string PROP_WALL_COUNT = "wallCount";
 		public const string PROP_ELASTICS = "elastics";
+		public const string PROP_PARTICLE_RADIUS = "particleRadius";
 
 		public const string BUF_VELOCITY_CURR = "VelocitiesCurr";
 		public const string BUF_VELOCITY_NEXT = "VelocitiesNext";
