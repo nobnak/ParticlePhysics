@@ -18,6 +18,7 @@ public class Third : MonoBehaviour {
 	public KeyCode keyReadVelocities = KeyCode.V;
 	public KeyCode keyReadPositions = KeyCode.P;
 	public KeyCode keyReadWalls = KeyCode.W;
+	public float accumulationInterval;
 
 	PositionService _positions;
 	VelocityService _velocities;
@@ -42,7 +43,7 @@ public class Third : MonoBehaviour {
 		_walls = BuildWalls(wallColliders);
 		_wallSolver = new WallCollisionSolver(compute, _velocities, _positions, _walls);
 
-		StartCoroutine(ParticleAccumulator(0.4f));
+		StartCoroutine(ParticleAccumulator());
 	}
 	void OnDestroy() {
 		if (_positions != null)
@@ -109,9 +110,9 @@ public class Third : MonoBehaviour {
 		_lifes.SetGlobal();
 	}
 
-	IEnumerator ParticleAccumulator(float interval) {
+	IEnumerator ParticleAccumulator() {
 		while (true) {
-			yield return new WaitForSeconds(interval);
+			yield return new WaitForSeconds(accumulationInterval);
 			if (_iterativeAcumulation)
 				AddParticle();
 		}

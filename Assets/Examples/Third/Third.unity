@@ -605,12 +605,13 @@ MonoBehaviour:
   - {fileID: 347302804}
   constants:
     elastics: .100000001
-    radius: .5
+    radius: .100000001
   keyAdd: 97
   keyReadLifes: 108
   keyReadVelocities: 118
   keyReadPositions: 112
   keyReadWalls: 119
+  accumulationInterval: .100000001
 --- !u!4 &1889913062
 Transform:
   m_ObjectHideFlags: 0
