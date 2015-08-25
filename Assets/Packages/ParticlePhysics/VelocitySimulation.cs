@@ -13,8 +13,7 @@ namespace ParticlePhysics {
 			_velocities = v;
 		}
 
-		public void Simulate(float dt) {
-			_compute.SetFloat(ShaderConst.PROP_DELTA_TIME, Time.deltaTime);
+		public void Simulate() {
 			_velocities.SetBuffer(_compute, _kernelSimulate);
 			_compute.Dispatch(_kernelSimulate, _velocities.SimSizeX, _velocities.SimSizeY, _velocities.SimSizeZ);
 			_velocities.Swap();

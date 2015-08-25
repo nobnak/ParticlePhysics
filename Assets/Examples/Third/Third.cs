@@ -96,14 +96,14 @@ public class Third : MonoBehaviour {
 		}
 
 		_constants.SetConstants(compute);
-		_velSimulation.Simulate(Time.deltaTime);
+		_velSimulation.Simulate();
 		for(var i = 0; i < 10; i++) {
 			_particleSolver.Solve();
 			_wallSolver.Solve();
 			_velocities.ClampMagnitude();
 		}
-		_posSimulation.Simulate(Time.deltaTime);
-		_lifes.Simulate(Time.deltaTime);
+		_posSimulation.Simulate();
+		_lifes.Simulate();
 
 		_positions.SetGlobal();
 		_lifes.SetGlobal();

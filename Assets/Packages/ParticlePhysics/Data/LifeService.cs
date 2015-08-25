@@ -43,8 +43,7 @@ namespace ParticlePhysics {
 			ShaderUtil.CalcWorkSize(l.Length, out x, out y, out z);
 			_compute.Dispatch(_kernelUpload, x, y, z);
 		}
-		public void Simulate(float dt) {
-			_compute.SetFloat(ShaderConst.PROP_DELTA_TIME, dt);
+		public void Simulate() {
 			SetBuffer(_compute, _kernelSimulate);
 			_compute.Dispatch(_kernelSimulate, SimSizeX, SimSizeY, SimSizeZ);
 		}

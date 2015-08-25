@@ -52,7 +52,8 @@ public class First : MonoBehaviour {
 			Debug.Log(buf);
 		}
 
-		_lifes.Simulate(Time.deltaTime);
+		compute.SetFloat(ShaderConst.PROP_DELTA_TIME, Time.deltaTime);
+		_lifes.Simulate();
 
 		_positions.SetGlobal();
 		_lifes.SetGlobal();

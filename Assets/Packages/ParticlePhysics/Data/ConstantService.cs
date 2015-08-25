@@ -10,6 +10,7 @@ namespace ParticlePhysics {
 		}
 
 		public void SetConstants(ComputeShader compute) {
+			compute.SetFloat(ShaderConst.PROP_DELTA_TIME, Time.deltaTime);
 			compute.SetFloat(ShaderConst.PROP_ELASTICS, _data.elastics);
 			compute.SetFloat(ShaderConst.PROP_PARTICLE_RADIUS, _data.radius);
 		}

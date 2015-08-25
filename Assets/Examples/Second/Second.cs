@@ -66,9 +66,10 @@ public class Second : MonoBehaviour {
 			Debug.Log(buf);
 		}
 
-		_velSimulation.Simulate(Time.deltaTime);
-		_posSimulation.Simulate(Time.deltaTime);
-		_lifes.Simulate(Time.deltaTime);
+		compute.SetFloat(ShaderConst.PROP_DELTA_TIME, Time.deltaTime);
+		_velSimulation.Simulate();
+		_posSimulation.Simulate();
+		_lifes.Simulate();
 
 		_positions.SetGlobal();
 		_lifes.SetGlobal();
