@@ -25,11 +25,11 @@ struct Wall {
 	float h;
 };
 
-static const float particleMass = 0.01;
+static const float particleMass = 1;
 static const float impulsiveMassCoeff = particleMass / (particleMass + particleMass);
-static const float distanceEpsilon = 0.01;
-static const float penetrationBias = 0.01;
-static const float penetrationSlop = 0.02;
+static const float distanceEpsilon = 0.001;
+static const float penetrationBias = 0.001;
+static const float penetrationSlop = 0.01;
 static const float friction = 0.2;
 static const float maxSpeed = 10.0;
 float dt;

@@ -592,7 +592,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   header: 0
-  capacity: 1024
+  capacity: 8192
   compute: {fileID: 7200000, guid: 8ea81e5b29837604d8fa5917d2f32580, type: 3}
   particlefab: {fileID: 194522, guid: c6a9e382a363a8c45b1147045502f58c, type: 2}
   emitter: {fileID: 186484740}
@@ -605,13 +605,13 @@ MonoBehaviour:
   - {fileID: 347302804}
   constants:
     elastics: .100000001
-    radius: .5
+    radius: .100000001
   keyAdd: 97
   keyReadLifes: 108
   keyReadVelocities: 118
   keyReadPositions: 112
   keyReadWalls: 119
-  accumulationInterval: .100000001
+  accumulationInterval: .00999999978
 --- !u!4 &1889913062
 Transform:
   m_ObjectHideFlags: 0

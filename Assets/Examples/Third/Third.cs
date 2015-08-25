@@ -98,7 +98,7 @@ public class Third : MonoBehaviour {
 
 		_constants.SetConstants(compute);
 		_velSimulation.Simulate();
-		for(var i = 0; i < 10; i++) {
+		for(var i = 0; i < 4; i++) {
 			_particleSolver.Solve();
 			_wallSolver.Solve();
 			_velocities.ClampMagnitude();
