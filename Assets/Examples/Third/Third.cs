@@ -28,6 +28,7 @@ public class Third : MonoBehaviour {
 	PositionSimulation _posSimulation;
 	WallCollisionSolver _wallSolver;
 	ParticleCollisionSolver _particleSolver;
+	bool _iterativeAcumulation = false;
 
 	void Start () {
 		_positions = new PositionService(compute, capacity);
@@ -40,6 +41,8 @@ public class Third : MonoBehaviour {
 
 		_walls = BuildWalls(wallColliders);
 		_wallSolver = new WallCollisionSolver(compute, _velocities, _positions, _walls);
+
+		StartCoroutine(ParticleAccumulator(0.4f));
 	}
 	void OnDestroy() {
 		if (_positions != null)
@@ -63,17 +66,8 @@ public class Third : MonoBehaviour {
 	}
 	
 	void Update () {
-		if (Input.GetKeyDown(keyAdd)) {
-			var inst = (GameObject)Instantiate(particlefab);
-			inst.transform.SetParent(transform, false);
-			inst.transform.localScale = (2f * constants.radius) * Vector3.one;
-			var mat = inst.GetComponent<Renderer>().material;
-			mat.SetInt(PROP_ID, header % capacity);
-			_velocities.Upload(header, new Vector2[]{ new Vector2(0f, 0f) });
-			_positions.Upload(header, new Vector2[]{ (Vector2)emitter.position });
-			_lifes.Upload(header, new float[]{ 1000f });
-			header++;
-		}
+		if (Input.GetKeyDown(keyAdd))
+			_iterativeAcumulation = !_iterativeAcumulation;
 		if (Input.GetKeyDown (keyReadPositions)) {
 			var buf = new StringBuilder("Positions:");
 			foreach (var p in _positions.Download()) {
@@ -103,15 +97,41 @@ public class Third : MonoBehaviour {
 
 		_constants.SetConstants(compute);
 		_velSimulation.Simulate(Time.deltaTime);
-		for(var i = 0; i < 3; i++) {
+		for(var i = 0; i < 10; i++) {
 			_particleSolver.Solve();
 			_wallSolver.Solve();
+			_velocities.ClampMagnitude();
 		}
 		_posSimulation.Simulate(Time.deltaTime);
 		_lifes.Simulate(Time.deltaTime);
 
 		_positions.SetGlobal();
 		_lifes.SetGlobal();
+	}
+
+	IEnumerator ParticleAccumulator(float interval) {
+		while (true) {
+			yield return new WaitForSeconds(interval);
+			if (_iterativeAcumulation)
+				AddParticle();
+		}
+	}
+	void AddParticle () {
+		var inst = (GameObject)Instantiate (particlefab);
+		inst.transform.SetParent (transform, false);
+		inst.transform.localScale = (2f * constants.radius) * Vector3.one;
+		var mat = inst.GetComponent<Renderer> ().material;
+		mat.SetInt (PROP_ID, header % capacity);
+		_velocities.Upload (header, new Vector2[] {
+			new Vector2 (0f, 0f)
+		});
+		_positions.Upload (header, new Vector2[] {
+			(Vector2)emitter.position
+		});
+		_lifes.Upload (header, new float[] {
+			1000f
+		});
+		header++;
 	}
 
 	static WallService BuildWalls(Transform[] wallColliders) {

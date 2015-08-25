@@ -12,12 +12,14 @@ namespace ParticlePhysics {
 
 		readonly ComputeShader _compute;
 		readonly int _kernelUpload;
+		readonly int _kernelClampVelocity;
 
 		Vector2[] _velocities;
 		ComputeBuffer _uploader;
 
 		public VelocityService(ComputeShader compute, int capacity) {
 			_kernelUpload = compute.FindKernel(ShaderConst.KERNEL_UPLOAD_VELOCITY);
+			_kernelClampVelocity = compute.FindKernel(ShaderConst.KERNEL_CLAMP_VELOCITY);
 			_compute = compute;
 			_velocities = new Vector2[capacity];
 			V0 = new ComputeBuffer(capacity, Marshal.SizeOf(typeof(Vector2)));
@@ -43,6 +45,11 @@ namespace ParticlePhysics {
 			int x, y, z;
 			ShaderUtil.CalcWorkSize(v.Length, out x, out y, out z);
 			_compute.Dispatch(_kernelUpload, x, y, z);
+		}
+		public void ClampMagnitude() {
+			SetBuffer(_compute, _kernelClampVelocity);
+			_compute.Dispatch(_kernelClampVelocity, SimSizeX, SimSizeY, SimSizeZ);
+			Swap();
 		}
 		public Vector2[] Download() {
 			V0.GetData (_velocities);

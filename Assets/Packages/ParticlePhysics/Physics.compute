@@ -10,6 +10,7 @@
 #pragma kernel SimulateLife
 #pragma kernel SolveWallCollision
 #pragma kernel SolveParticleCollision
+#pragma kernel ClampVelocity
 
 
 
@@ -27,6 +28,10 @@ struct Wall {
 static const float particleMass = 1;
 static const float impulsiveMassCoeff = particleMass / (particleMass + particleMass);
 static const float distanceEpsilon = 0.01;
+static const float penetrationBias = 0.01;
+static const float penetrationSlop = 0.02;
+static const float friction = 0.2;
+static const float maxSpeed = 50.0;
 float dt;
 float elastics;
 float particleRadius;
@@ -98,17 +103,22 @@ void SolveWallCollision(uint3 id : SV_DispatchThreadID) {
 	float2 v = VelocitiesCurr[i];
 	
 	float2 p = 0;
+	float cpenet = penetrationBias / dt;
 	for (int j = 0; j < wallCount; j++) {
 		Wall wall = Walls[j];
 		float v0n = dot(wall.n, v);
 		float dn = dot(wall.n, x) - wall.dn;
 		float dt = dot(wall.t, x) - wall.dt;
-		if (v0n >= 0 || abs(dn) > (wall.h + particleRadius) || abs(dt) > (wall.w + particleRadius))
+		if (abs(dn) > (wall.h + particleRadius) || abs(dt) > (wall.w + particleRadius))
 			continue;
-		p += ((1.0 + elastics) * v0n) * wall.n;
+		float penet = cpenet * max(0.0, (wall.h + particleRadius - penetrationSlop) - dn);
+		float pn = max(0.0, -(1.0 + elastics) * v0n + cpenet * penet);
+		float v0t = dot(wall.t, v);
+		float pt = clamp(-v0t, -friction * pn, friction * pn);
+		p += pn * wall.n + pt * wall.t;
 	}
 	
-	VelocitiesNext[i] = v - p;
+	VelocitiesNext[i] = v + p;
 }
 [numthreads(WARP_SIZE,1,1)]
 void SolveParticleCollision(uint3 id : SV_DispatchThreadID) {
@@ -123,23 +133,34 @@ void SolveParticleCollision(uint3 id : SV_DispatchThreadID) {
 		return;
 	
 	float2 p = 0;
-	float sqrCollMaxRange = 4.0 * particleRadius * particleRadius;
-	float sqrCollMinRange = distanceEpsilon * distanceEpsilon;
+	float colDist = 2.0 * particleRadius;
+	float colMinDist = -particleRadius + distanceEpsilon;
+	float cpenet = penetrationBias / dt;
 	for (uint j = 0; j < lifesCapacity; j++) {
 		float tj = Lifes[j];
 		float2 xj = Positions[j];
-		float2 d = xi - xj;
-		float d2 = dot(d, d);
-		if (i == j || tj <= 0.0 || sqrCollMaxRange <= d2 || d2 <= sqrCollMinRange)
+		float2 dp = xi - xj;
+		float d = length(dp) - colDist;
+		if (i == j || tj <= 0.0 || 0 <= d || d <= colMinDist)
 			continue;
 		
 		float2 vj = VelocitiesCurr[j];
 		float2 v = vi - vj;
-		float2 n = normalize(d);
+		float2 n = normalize(dp);
 		float v0n = dot(n, v);
-		if (v0n >= 0)
-			continue;
-		p += (impulsiveMassCoeff * (1.0 + elastics) * v0n) * n;
+		float penet = cpenet * max(0.0, -(d + penetrationSlop));
+		float pn = max(0.0, -impulsiveMassCoeff * (1.0 + elastics) * v0n + penet);
+		float2 t = float2(n.y, -n.x);
+		float v0t = dot(t, v);
+		float pt = clamp(-v0t, -friction * pn, friction * pn);
+		p += pn * n + pt * t;
 	}
-	VelocitiesNext[i] = vi - p;
+	VelocitiesNext[i] = vi + p;
+}
+[numthreads(WARP_SIZE,1,1)]
+void ClampVelocity(uint3 id : SV_DispatchThreadID) {
+	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
+	float2 v = VelocitiesCurr[i];
+	float a = length(v);
+	VelocitiesNext[i] = clamp(a, -maxSpeed, maxSpeed) * normalize(v);
 }
