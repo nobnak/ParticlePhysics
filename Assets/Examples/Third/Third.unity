@@ -605,7 +605,7 @@ MonoBehaviour:
   - {fileID: 347302804}
   constants:
     elastics: .100000001
-    radius: .100000001
+    radius: .5
   keyAdd: 97
   keyReadLifes: 108
   keyReadVelocities: 118
