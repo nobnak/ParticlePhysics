@@ -16,6 +16,7 @@ namespace ParticlePhysics {
 		public const string KERNEL_SOLVE_WALL_COLLISION = "SolveWallCollision";
 		public const string KERNEL_SOLVE_PARTICLE_COLLISION = "SolveParticleCollision";
 		public const string KERNEL_CLAMP_VELOCITY = "ClampVelocity";
+		public const string KERNEL_CHECK_BOUNDS = "CheckBounds";
 
 		public const string PROP_UPLOAD_OFFSET = "uploadOffset";
 		public const string PROP_UPLOAD_LENGTH = "uploadLength";
@@ -23,6 +24,7 @@ namespace ParticlePhysics {
 		public const string PROP_WALL_COUNT = "wallCount";
 		public const string PROP_ELASTICS = "elastics";
 		public const string PROP_PARTICLE_RADIUS = "particleRadius";
+		public const string PROP_BOUNDS = "bounds";
 
 		public const string BUF_VELOCITY_CURR = "VelocitiesCurr";
 		public const string BUF_VELOCITY_NEXT = "VelocitiesNext";

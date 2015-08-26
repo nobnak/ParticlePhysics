@@ -10,7 +10,7 @@ public class Third : MonoBehaviour {
 	public int capacity = 1024;
 	public ComputeShader compute;
 	public GameObject particlefab;
-	public Transform emitter;
+	public Transform[] emitters;
 	public Transform[] wallColliders;
 	public ConstantService.ConstantData constants;
 	public KeyCode keyAdd = KeyCode.A;
@@ -29,6 +29,7 @@ public class Third : MonoBehaviour {
 	PositionSimulation _posSimulation;
 	WallCollisionSolver _wallSolver;
 	ParticleCollisionSolver _particleSolver;
+	BoundsChecker _boundsChecker;
 	bool _iterativeAcumulation = false;
 
 	void Start () {
@@ -39,10 +40,12 @@ public class Third : MonoBehaviour {
 		_velSimulation = new VelocitySimulation(compute, _velocities);
 		_posSimulation = new PositionSimulation(compute, _velocities, _positions);
 		_particleSolver = new ParticleCollisionSolver(compute, _velocities, _positions, _lifes);
+		_boundsChecker = new BoundsChecker(compute, _lifes, _positions);
 
 		_walls = BuildWalls(wallColliders);
 		_wallSolver = new WallCollisionSolver(compute, _velocities, _positions, _walls);
 
+		UpdateConstantData();
 		StartCoroutine(ParticleAccumulator());
 	}
 	void OnDestroy() {
@@ -96,7 +99,12 @@ public class Third : MonoBehaviour {
 			Debug.Log(buf);
 		}
 
-		_constants.SetConstants(compute);
+		UpdateConstantData();
+		_positions.SetGlobal();
+		_lifes.SetGlobal();
+	}
+	void FixedUpdate() {
+		_constants.SetConstants(compute, Time.fixedDeltaTime);
 		_velSimulation.Simulate();
 		for(var i = 0; i < 4; i++) {
 			_particleSolver.Solve();
@@ -104,35 +112,45 @@ public class Third : MonoBehaviour {
 			_velocities.ClampMagnitude();
 		}
 		_posSimulation.Simulate();
+		_boundsChecker.Check();
 		_lifes.Simulate();
-
-		_positions.SetGlobal();
-		_lifes.SetGlobal();
 	}
 
 	IEnumerator ParticleAccumulator() {
 		while (true) {
 			yield return new WaitForSeconds(accumulationInterval);
-			if (_iterativeAcumulation)
-				AddParticle();
+			if (_iterativeAcumulation) {
+				var posLocal = new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f));
+				var tr = emitters[Random.Range(0, emitters.Length)];
+				var pos = tr.TransformPoint(posLocal);
+				AddParticle(new Vector2[]{ (Vector2)pos} , 1000f);
+			}
 		}
 	}
-	void AddParticle () {
+	void UpdateConstantData() {
+		var center = (Vector2)Camera.main.transform.position;
+		var h = 2f * Camera.main.orthographicSize;
+		var w = Camera.main.aspect * h;
+		constants.bounds = new Vector4(center.x - w, center.y - h, center.x + w, center.y + h);
+	}
+	void AddParticle (Vector2[] positions, float life) {
+		var l = new float[positions.Length];
+		for (var i = 0; i < positions.Length; i++) {
+			GenerateParticle(header + i);
+			l[i] = life;
+		}
+		_velocities.Upload (header, new Vector2[positions.Length]);
+		_positions.Upload (header, positions);
+		_lifes.Upload (header, l);
+		header = (header + positions.Length) % capacity;
+	}
+	GameObject GenerateParticle(int id) {
 		var inst = (GameObject)Instantiate (particlefab);
 		inst.transform.SetParent (transform, false);
 		inst.transform.localScale = (2f * constants.radius) * Vector3.one;
 		var mat = inst.GetComponent<Renderer> ().material;
-		mat.SetInt (PROP_ID, header % capacity);
-		_velocities.Upload (header, new Vector2[] {
-			new Vector2 (0f, 0f)
-		});
-		_positions.Upload (header, new Vector2[] {
-			(Vector2)emitter.position
-		});
-		_lifes.Upload (header, new float[] {
-			1000f
-		});
-		header++;
+		mat.SetInt (PROP_ID, id % capacity);
+		return inst;
 	}
 
 	static WallService BuildWalls(Transform[] wallColliders) {
