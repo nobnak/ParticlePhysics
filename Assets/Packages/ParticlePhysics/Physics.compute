@@ -27,12 +27,11 @@ struct Wall {
 
 static const float particleMass = 1;
 static const float impulsiveMassCoeff = particleMass / (particleMass + particleMass);
-static const float distanceEpsilon = 0.01;
-static const float penetrationBias = 0.01;
-static const float penetrationSlop = 0.02;
+static const float distanceEpsilon = 0.001;
+static const float penetrationBias = 0.001;
+static const float penetrationSlop = 0.01;
 static const float friction = 0.2;
-static const float maxSpeed = 50.0;
-static const float dragCoeff = 0.1;
+static const float maxSpeed = 10.0;
 float dt;
 float elastics;
 float particleRadius;
@@ -85,8 +84,7 @@ void UploadLife(uint3 id : SV_DispatchThreadID) {
 [numthreads(WARP_SIZE,1,1)]
 void SimulateVelocity(uint3 id : SV_DispatchThreadID) {
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
-	float2 v = VelocitiesCurr[i];
-	VelocitiesNext[i] = v + dt * G - dt * dragCoeff * length(v) * v;
+	VelocitiesNext[i] = VelocitiesCurr[i] + dt * G;
 }
 [numthreads(WARP_SIZE,1,1)]
 void SimulatePosition(uint3 id : SV_DispatchThreadID) {
@@ -114,7 +112,7 @@ void SolveWallCollision(uint3 id : SV_DispatchThreadID) {
 		if (abs(dn) > (wall.h + particleRadius) || abs(dt) > (wall.w + particleRadius))
 			continue;
 		float penet = cpenet * max(0.0, (wall.h + particleRadius - penetrationSlop) - dn);
-		float pn = max(0.0, -(1.0 + elastics) * v0n + cpenet * penet);
+		float pn = max(0.0, -(1.0 + elastics) * v0n + penet);
 		float v0t = dot(wall.t, v);
 		float pt = clamp(-v0t, -friction * pn, friction * pn);
 		p += pn * wall.n + pt * wall.t;
