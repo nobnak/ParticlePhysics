@@ -32,6 +32,7 @@ static const float penetrationBias = 0.01;
 static const float penetrationSlop = 0.02;
 static const float friction = 0.2;
 static const float maxSpeed = 50.0;
+static const float dragCoeff = 0.1;
 float dt;
 float elastics;
 float particleRadius;
@@ -84,7 +85,8 @@ void UploadLife(uint3 id : SV_DispatchThreadID) {
 [numthreads(WARP_SIZE,1,1)]
 void SimulateVelocity(uint3 id : SV_DispatchThreadID) {
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
-	VelocitiesNext[i] = VelocitiesCurr[i] + dt * G;
+	float2 v = VelocitiesCurr[i];
+	VelocitiesNext[i] = v + dt * G - dt * dragCoeff * length(v) * v;
 }
 [numthreads(WARP_SIZE,1,1)]
 void SimulatePosition(uint3 id : SV_DispatchThreadID) {
