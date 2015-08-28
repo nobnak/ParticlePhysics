@@ -17,6 +17,8 @@ namespace ParticlePhysics {
 		public const string KERNEL_SOLVE_PARTICLE_COLLISION = "SolveParticleCollision";
 		public const string KERNEL_CLAMP_VELOCITY = "ClampVelocity";
 		public const string KERNEL_CHECK_BOUNDS = "CheckBounds";
+		public const string KERNEL_INIT_BROADPHASE = "InitBroadPhase";
+		public const string KERNEL_SOVLE_BROADPHASE = "SolveBroadPhase";
 
 		public const string PROP_UPLOAD_OFFSET = "uploadOffset";
 		public const string PROP_UPLOAD_LENGTH = "uploadLength";
@@ -25,6 +27,7 @@ namespace ParticlePhysics {
 		public const string PROP_ELASTICS = "elastics";
 		public const string PROP_PARTICLE_RADIUS = "particleRadius";
 		public const string PROP_BOUNDS = "bounds";
+		public const string PROP_BROADPHASE_DISTANCE = "broadphaseDistance";
 
 		public const string BUF_VELOCITY_CURR = "VelocitiesCurr";
 		public const string BUF_VELOCITY_NEXT = "VelocitiesNext";
@@ -33,5 +36,8 @@ namespace ParticlePhysics {
 		public const string BUF_UPLOADER_FLOAT = "UploaderFloat";
 		public const string BUF_WALL = "Walls";
 		public const string BUF_LIFE = "Lifes";
+		public const string BUF_Y = "Ys";
+		public const string BUF_BROADPHASE_BAND = "BroadphaseBands";
+		public const string BUF_BROADPHASE_KEYS = "BroadphaseKeys";
 	}
 }

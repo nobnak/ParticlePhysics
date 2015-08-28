@@ -9,6 +9,7 @@ public class Third : MonoBehaviour {
 	public int header = 0;
 	public int capacity = 1024;
 	public ComputeShader compute;
+	public ComputeShader computeSort;
 	public GameObject particlefab;
 	public Transform[] emitters;
 	public Transform[] wallColliders;
