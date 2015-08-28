@@ -31,6 +31,7 @@ public class Third : MonoBehaviour {
 	WallCollisionSolver _wallSolver;
 	ParticleCollisionSolver _particleSolver;
 	BoundsChecker _boundsChecker;
+	BroadPhase _broadphase;
 	bool _iterativeAcumulation = false;
 
 	void Start () {
@@ -40,9 +41,9 @@ public class Third : MonoBehaviour {
 		_constants = new ConstantService(constants);
 		_velSimulation = new VelocitySimulation(compute, _velocities);
 		_posSimulation = new PositionSimulation(compute, _velocities, _positions);
-		_particleSolver = new ParticleCollisionSolver(compute, _velocities, _positions, _lifes);
+		_broadphase = new BroadPhase(compute, computeSort, _lifes, _positions);
+		_particleSolver = new ParticleCollisionSolver(compute, _velocities, _positions, _lifes, _broadphase);
 		_boundsChecker = new BoundsChecker(compute, _lifes, _positions);
-
 		_walls = BuildWalls(wallColliders);
 		_wallSolver = new WallCollisionSolver(compute, _velocities, _positions, _walls);
 
@@ -64,6 +65,8 @@ public class Third : MonoBehaviour {
 			_velSimulation.Dispose();
 		if (_posSimulation != null)
 			_posSimulation.Dispose();
+		if (_broadphase != null)
+			_broadphase.Dispose();
 		if (_wallSolver != null)
 			_wallSolver.Dispose();
 		if (_particleSolver != null)
@@ -107,6 +110,7 @@ public class Third : MonoBehaviour {
 	void FixedUpdate() {
 		_constants.SetConstants(compute, Time.fixedDeltaTime);
 		_velSimulation.Simulate();
+		_broadphase.FindBand(2f * constants.radius);
 		for(var i = 0; i < 4; i++) {
 			_particleSolver.Solve();
 			_wallSolver.Solve();

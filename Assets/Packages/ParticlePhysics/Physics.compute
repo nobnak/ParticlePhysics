@@ -2,7 +2,7 @@
 #define MAX_THREAD_GROUPS 1024
 #define MAX_X_THREADS (WARP_SIZE * MAX_THREAD_GROUPS)
 #define G_CONST -9.81
-#define BAND_LIMIT 10
+#define BAND_LIMIT 100
 #pragma kernel UploadVelocity
 #pragma kernel UploadPosition
 #pragma kernel UploadLife
@@ -50,7 +50,6 @@ float4 bounds;
 int uploadOffset;
 int uploadLength;
 int wallCount;
-uint capacity;
 RWStructuredBuffer<float2> VelocitiesCurr;
 RWStructuredBuffer<float2> VelocitiesNext;
 RWStructuredBuffer<float2> Positions;
@@ -149,11 +148,13 @@ void SolveParticleCollision(uint3 id : SV_DispatchThreadID) {
 	if (ti <= 0.0)
 		return;
 	
+	Band b = BroadphaseBands[i];
 	float2 p = 0;
 	float colDist = 2.0 * particleRadius;
 	float colMinDist = -particleRadius + distanceEpsilon;
 	float cpenet = penetrationBias / dt;
-	for (uint j = 0; j < lifesCapacity; j++) {
+	for (uint k = b.start; k < b.end; k++) {
+		uint j = BroadphaseKeys[k];
 		float tj = Lifes[j];
 		float2 xj = Positions[j];
 		float2 dp = xi - xj;
@@ -200,25 +201,18 @@ void InitBroadPhase(uint3 id : SV_DispatchThreadID) {
 }
 [numthreads(WARP_SIZE,1,1)]
 void SolveBroadPhase(uint3 id : SV_DispatchThreadID) {
+	uint ysCapacity, stride;
+	Ys.GetDimensions(ysCapacity, stride);
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
-	if (i >= capacity)
-		return;
-		
 	uint key = BroadphaseKeys[i];
 	float center = Ys[key];
 	
-	uint start = key;
-	uint end = key;
-	for (uint j = 0; j < BAND_LIMIT; j++) {
-		if (start <= 0 || (center - Ys[start-1]) > broadphaseDistance)
-			break;
+	uint start = i;
+	uint end = i;
+	for (uint j = BAND_LIMIT; j > 0 && start > 0 && (center - Ys[BroadphaseKeys[start-1]]) <= broadphaseDistance; j--)
 		start--;
-	}
-	for (j = 0; j < BAND_LIMIT; j++) {
-		if (end >= capacity || (Ys[end] - center) > broadphaseDistance)
-			break;
+	for (j = BAND_LIMIT; j > 0 && end < ysCapacity && (Ys[BroadphaseKeys[end]] - center) <= broadphaseDistance; j--)
 		end++;
-	}
 	Band b;
 	b.start = start;
 	b.end = end;
