@@ -662,6 +662,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 1889913062}
   - 114: {fileID: 1889913061}
+  - 114: {fileID: 1889913063}
   m_Layer: 0
   m_Name: Third
   m_TagString: Untagged
@@ -680,32 +681,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9a0dc64a91f2c34183d5392e35e49e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  header: 0
-  capacity: 1024
-  compute: {fileID: 7200000, guid: 8ea81e5b29837604d8fa5917d2f32580, type: 3}
-  computeSort: {fileID: 7200000, guid: 5571ac2ec9cc23e498e329945fdfa8e9, type: 3}
-  emitters:
-  - {fileID: 186484740}
-  - {fileID: 1153094161}
-  - {fileID: 314580934}
-  wallColliders:
-  - {fileID: 2052295432}
-  - {fileID: 347302804}
-  - {fileID: 1057544112}
-  - {fileID: 1017335073}
-  - {fileID: 1598409612}
-  constants:
-    elastics: .100000001
-    radius: .200000003
-    bounds: {x: -100, y: -100, z: 100, w: 100}
-  containerfab: {fileID: 194522, guid: 0b323baab75d02a47ae2941a533e285d, type: 2}
-  particlefabs:
-  - {fileID: 194522, guid: 51eda6169db264e4b95f3f9989bb7376, type: 2}
   keyAdd: 97
   keyReadLifes: 108
   keyReadVelocities: 118
   keyReadPositions: 112
   keyReadWalls: 119
+  physics: {fileID: 1889913063}
+  emitters:
+  - {fileID: 186484740}
+  - {fileID: 1153094161}
+  - {fileID: 314580934}
   accumulationInterval: .00999999978
 --- !u!4 &1889913062
 Transform:
@@ -719,6 +704,34 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
+--- !u!114 &1889913063
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1889913060}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 868a6d818cc7a4943bc61230e62e01ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  header: 0
+  capacity: 1024
+  compute: {fileID: 7200000, guid: 8ea81e5b29837604d8fa5917d2f32580, type: 3}
+  computeSort: {fileID: 7200000, guid: 5571ac2ec9cc23e498e329945fdfa8e9, type: 3}
+  wallColliders:
+  - {fileID: 2052295432}
+  - {fileID: 1057544112}
+  - {fileID: 1017335073}
+  - {fileID: 1598409612}
+  - {fileID: 347302804}
+  constants:
+    elastics: .100000001
+    radius: .200000003
+    bounds: {x: -100, y: -100, z: 100, w: 100}
+  containerfab: {fileID: 194522, guid: 0b323baab75d02a47ae2941a533e285d, type: 2}
+  particlefabs:
+  - {fileID: 194522, guid: c6a9e382a363a8c45b1147045502f58c, type: 2}
 --- !u!1 &2052295429
 GameObject:
   m_ObjectHideFlags: 0
