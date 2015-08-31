@@ -1,4 +1,4 @@
-﻿Shader "Custom/Particle" {
+﻿Shader "Custom/ParticleExtID" {
 	Properties {
 		_Color ("Color", Color) = (1,1,1,1)
 		_Id ("ID", int) = 0

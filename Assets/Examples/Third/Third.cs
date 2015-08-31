@@ -10,10 +10,13 @@ public class Third : MonoBehaviour {
 	public int capacity = 1024;
 	public ComputeShader compute;
 	public ComputeShader computeSort;
-	public GameObject particlefab;
 	public Transform[] emitters;
 	public Transform[] wallColliders;
 	public ConstantService.ConstantData constants;
+
+	public GameObject containerfab;
+	public GameObject[] particlefabs;
+
 	public KeyCode keyAdd = KeyCode.A;
 	public KeyCode keyReadLifes = KeyCode.L;
 	public KeyCode keyReadVelocities = KeyCode.V;
@@ -32,6 +35,7 @@ public class Third : MonoBehaviour {
 	ParticleCollisionSolver _particleSolver;
 	BoundsChecker _boundsChecker;
 	BroadPhase _broadphase;
+	MeshCombiner _combiner;
 	bool _iterativeAcumulation = false;
 
 	void Start () {
@@ -46,6 +50,15 @@ public class Third : MonoBehaviour {
 		_boundsChecker = new BoundsChecker(compute, _lifes, _positions);
 		_walls = BuildWalls(wallColliders);
 		_wallSolver = new WallCollisionSolver(compute, _velocities, _positions, _walls);
+
+		var particles = new GameObject[capacity];
+		foreach (var p in particlefabs)
+			p.transform.localScale = 2f * constants.radius * Vector3.one;
+		for (var i = 0; i < capacity; i++)
+			particles[i] = particlefabs[Random.Range(0, particlefabs.Length)];
+		_combiner = new MeshCombiner(containerfab);
+		_combiner.Rebuild(particles);
+		_combiner.SetParent(transform, false);
 
 		UpdateConstantData();
 		StartCoroutine(ParticleAccumulator());
@@ -71,6 +84,8 @@ public class Third : MonoBehaviour {
 			_wallSolver.Dispose();
 		if (_particleSolver != null)
 			_particleSolver.Dispose();
+		if (_combiner != null)
+			_combiner.Dispose();
 	}
 	
 	void Update () {
@@ -140,22 +155,12 @@ public class Third : MonoBehaviour {
 	}
 	void AddParticle (Vector2[] positions, float life) {
 		var l = new float[positions.Length];
-		for (var i = 0; i < positions.Length; i++) {
-			GenerateParticle(header + i);
+		for (var i = 0; i < positions.Length; i++)
 			l[i] = life;
-		}
 		_velocities.Upload (header, new Vector2[positions.Length]);
 		_positions.Upload (header, positions);
 		_lifes.Upload (header, l);
 		header = (header + positions.Length) % capacity;
-	}
-	GameObject GenerateParticle(int id) {
-		var inst = (GameObject)Instantiate (particlefab);
-		inst.transform.SetParent (transform, false);
-		inst.transform.localScale = (2f * constants.radius) * Vector3.one;
-		var mat = inst.GetComponent<Renderer> ().material;
-		mat.SetInt (PROP_ID, id % capacity);
-		return inst;
 	}
 
 	static WallService BuildWalls(Transform[] wallColliders) {
