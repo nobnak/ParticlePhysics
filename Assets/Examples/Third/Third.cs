@@ -12,17 +12,14 @@ public class Third : MonoBehaviour {
 
 	public PhysicsEngine physics;
 	public Transform[] emitters;
-	public float accumulationInterval;
+	public float particleGenerationSpeed = 100f;
 
-	bool _iterativeAcumulation = false;
-
-	void Start () {
-		StartCoroutine(ParticleAccumulator());
-	}
+	bool _particleAccumulation = false;
+	float _reservedParticles = 0f;
 	
 	void Update () {
 		if (Input.GetKeyDown(keyAdd))
-			_iterativeAcumulation = !_iterativeAcumulation;
+			_particleAccumulation = !_particleAccumulation;
 		if (Input.GetKeyDown (keyReadPositions)) {
 			var buf = new StringBuilder("Positions:");
 			foreach (var p in physics.Positions.Download()) {
@@ -50,16 +47,22 @@ public class Third : MonoBehaviour {
 			Debug.Log(buf);
 		}
 
+		GenerateParticles();
 	}
-	IEnumerator ParticleAccumulator() {
-		while (true) {
-			yield return new WaitForSeconds(accumulationInterval);
-			if (_iterativeAcumulation) {
+	void GenerateParticles() {
+		if (_particleAccumulation)
+			_reservedParticles += particleGenerationSpeed * Time.deltaTime;
+
+		if (_reservedParticles > ShaderConst.WARP_SIZE) {
+			_reservedParticles -= ShaderConst.WARP_SIZE;
+
+			var posisions = new Vector2[ShaderConst.WARP_SIZE];
+			for (var i = 0; i < posisions.Length; i++) {
 				var posLocal = new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f));
 				var tr = emitters[Random.Range(0, emitters.Length)];
-				var pos = tr.TransformPoint(posLocal);
-				physics.AddParticle(new Vector2[]{ (Vector2)pos} , 1000f);
+				posisions[i] = tr.TransformPoint(posLocal);
 			}
+			physics.AddParticle(posisions , 100f);
 		}
 	}
 }
