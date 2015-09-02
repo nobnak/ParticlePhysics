@@ -259,7 +259,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   containerfab: {fileID: 112278, guid: a33ff0ed114054849992dda60e4be4c0, type: 2}
-  count: 32
+  count: 8192
   radius: 10
   particlefabs:
   - {fileID: 135704, guid: c590439385dcaae42b9e37a3640f0170, type: 2}
