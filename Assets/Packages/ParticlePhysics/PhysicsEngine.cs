@@ -27,7 +27,7 @@ namespace ParticlePhysics {
 		public WallCollisionSolver WallSolver { get; private set; }
 		public ParticleCollisionSolver ParticleSolver { get; private set; }
 		public BoundsChecker BoundsChecker { get; private set; }
-		public BroadPhase Broadphase { get; private set; }
+		public CollisionDetection Broadphase { get; private set; }
 		public MeshCombiner Combiner { get; private set; }
 		
 		void Start () {
@@ -37,7 +37,7 @@ namespace ParticlePhysics {
 			Constants = new ConstantService(constants);
 			VelSimulation = new VelocitySimulation(compute, Velocities);
 			PosSimulation = new PositionSimulation(compute, Velocities, Positions);
-			Broadphase = new BroadPhase(compute, computeSort, Lifes, Positions);
+			Broadphase = new CollisionDetection(compute, computeSort, Lifes, Positions);
 			ParticleSolver = new ParticleCollisionSolver(compute, Velocities, Positions, Lifes, Broadphase);
 			BoundsChecker = new BoundsChecker(compute, Lifes, Positions);
 			Walls = BuildWalls(wallColliders);
@@ -87,8 +87,8 @@ namespace ParticlePhysics {
 		void FixedUpdate() {
 			Constants.SetConstants(compute, Time.fixedDeltaTime);
 			VelSimulation.Simulate();
-			Broadphase.FindBand(2f * constants.radius);
-			for(var i = 0; i < 4; i++) {
+			Broadphase.Detect(2f * constants.radius);
+			for(var i = 0; i < 10; i++) {
 				WallSolver.Solve();
 				ParticleSolver.Solve();
 				Velocities.ClampMagnitude();

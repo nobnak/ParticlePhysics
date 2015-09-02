@@ -4,9 +4,9 @@ using System.Runtime.InteropServices;
 using MergeSort;
 
 namespace ParticlePhysics {
-	public class BroadPhase : System.IDisposable {
+	public class CollisionDetection : System.IDisposable {
 		public ComputeBuffer Keys { get; private set; }
-		public ComputeBuffer Bands { get; private set; }
+		public ComputeBuffer Collisions { get; private set; }
 
 		readonly ComputeShader _compute;
 		readonly ComputeBuffer _ys;
@@ -15,7 +15,7 @@ namespace ParticlePhysics {
 		readonly BitonicMergeSort _sort;
 		readonly int _kernelInitYs, _kernelSolve;
 
-		public BroadPhase(ComputeShader compute, ComputeShader computeSort, LifeService l, PositionService p) {
+		public CollisionDetection(ComputeShader compute, ComputeShader computeSort, LifeService l, PositionService p) {
 			var capacity = l.Lifes.count;
 			_lifes = l;
 			_positions = p;
@@ -25,10 +25,10 @@ namespace ParticlePhysics {
 			_sort = new BitonicMergeSort(computeSort);
 			Keys = new ComputeBuffer(capacity, Marshal.SizeOf(typeof(uint)));
 			_ys = new ComputeBuffer(capacity, Marshal.SizeOf(typeof(float)));
-			Bands = new ComputeBuffer(capacity, Marshal.SizeOf(typeof(Band)));
+			Collisions = new ComputeBuffer(capacity, Marshal.SizeOf(typeof(Collision)));
 		}
 
-		public void FindBand(float distance) {
+		public void Detect(float distance) {
 			int x = _lifes.SimSizeX, y = _lifes.SimSizeY, z = _lifes.SimSizeZ;
 			_compute.SetBuffer(_kernelInitYs, ShaderConst.BUF_LIFE, _lifes.Lifes);
 			_compute.SetBuffer(_kernelInitYs, ShaderConst.BUF_POSITION, _positions.P0);
@@ -38,20 +38,21 @@ namespace ParticlePhysics {
 			_sort.Init(Keys);
 			_sort.Sort(Keys, _ys);
 
-			_compute.SetFloat(ShaderConst.PROP_BROADPHASE_DISTANCE, distance);
+			_compute.SetFloat(ShaderConst.PROP_BROADPHASE_SQR_DISTANCE, distance * distance);
 			_compute.SetBuffer(_kernelSolve, ShaderConst.BUF_Y, _ys);
+			_compute.SetBuffer(_kernelSolve, ShaderConst.BUF_BROADPHASE_KEYS, Keys);
+			_compute.SetBuffer(_kernelSolve, ShaderConst.BUF_POSITION, _positions.P0);
 			SetBuffer(_compute, _kernelSolve);
 			_compute.Dispatch(_kernelSolve, x, y, z);
 		}
 		public void SetBuffer(ComputeShader c, int kernel) {
-			c.SetBuffer(kernel, ShaderConst.BUF_BROADPHASE_KEYS, Keys);
-			c.SetBuffer(kernel, ShaderConst.BUF_BROADPHASE_BAND, Bands);
+			c.SetBuffer(kernel, ShaderConst.BUF_COLLISIONS, Collisions);
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
-		public struct Band {
-			public uint start;
-			public uint end;
+		public unsafe struct Collision {
+			public uint count;
+			public fixed uint colliders[ShaderConst.COLLIDER_CAPACITY];
 		}
 
 		#region IDisposable implementation
@@ -62,8 +63,8 @@ namespace ParticlePhysics {
 				Keys.Dispose();
 			if (_ys != null)
 				_ys.Dispose();
-			if (Bands != null)
-				Bands.Dispose();
+			if (Collisions != null)
+				Collisions.Dispose();
 		}
 		#endregion
 	}

@@ -6,6 +6,7 @@ namespace ParticlePhysics {
 		public const int WARP_SIZE = 64;
 		public const int MAX_THREAD_GROUPS = 1024;
 		public const int MAX_X_THREADS = WARP_SIZE * MAX_THREAD_GROUPS;
+		public const int COLLIDER_CAPACITY = 10;
 
 		public const string KERNEL_UPLOAD_VELOCITY = "UploadVelocity";
 		public const string KERNEL_UPLOAD_POSITION = "UploadPosition";
@@ -27,7 +28,7 @@ namespace ParticlePhysics {
 		public const string PROP_ELASTICS = "elastics";
 		public const string PROP_PARTICLE_RADIUS = "particleRadius";
 		public const string PROP_BOUNDS = "bounds";
-		public const string PROP_BROADPHASE_DISTANCE = "broadphaseDistance";
+		public const string PROP_BROADPHASE_SQR_DISTANCE = "broadphaseSqrDistance";
 
 		public const string BUF_VELOCITY_CURR = "VelocitiesCurr";
 		public const string BUF_VELOCITY_NEXT = "VelocitiesNext";
@@ -37,7 +38,7 @@ namespace ParticlePhysics {
 		public const string BUF_WALL = "Walls";
 		public const string BUF_LIFE = "Lifes";
 		public const string BUF_Y = "Ys";
-		public const string BUF_BROADPHASE_BAND = "BroadphaseBands";
+		public const string BUF_COLLISIONS = "Collisions";
 		public const string BUF_BROADPHASE_KEYS = "BroadphaseKeys";
 	}
 }
