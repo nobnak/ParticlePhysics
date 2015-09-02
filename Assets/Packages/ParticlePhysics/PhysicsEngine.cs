@@ -89,8 +89,8 @@ namespace ParticlePhysics {
 			VelSimulation.Simulate();
 			Broadphase.FindBand(2f * constants.radius);
 			for(var i = 0; i < 4; i++) {
-				ParticleSolver.Solve();
 				WallSolver.Solve();
+				ParticleSolver.Solve();
 				Velocities.ClampMagnitude();
 			}
 			PosSimulation.Simulate();
