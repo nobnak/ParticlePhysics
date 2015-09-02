@@ -27,7 +27,7 @@ namespace ParticlePhysics {
 		public WallCollisionSolver WallSolver { get; private set; }
 		public ParticleCollisionSolver ParticleSolver { get; private set; }
 		public BoundsChecker BoundsChecker { get; private set; }
-		public CollisionDetection Broadphase { get; private set; }
+		public CollisionDetection Collisions { get; private set; }
 		public MeshCombiner Combiner { get; private set; }
 		
 		void Start () {
@@ -37,20 +37,24 @@ namespace ParticlePhysics {
 			Constants = new ConstantService(constants);
 			VelSimulation = new VelocitySimulation(compute, Velocities);
 			PosSimulation = new PositionSimulation(compute, Velocities, Positions);
-			Broadphase = new CollisionDetection(compute, computeSort, Lifes, Positions);
-			ParticleSolver = new ParticleCollisionSolver(compute, Velocities, Positions, Lifes, Broadphase);
+			Collisions = new CollisionDetection(compute, computeSort, Lifes, Positions);
+			ParticleSolver = new ParticleCollisionSolver(compute, Velocities, Positions, Lifes, Collisions);
 			BoundsChecker = new BoundsChecker(compute, Lifes, Positions);
 			Walls = BuildWalls(wallColliders);
 			WallSolver = new WallCollisionSolver(compute, Velocities, Positions, Walls);
 			
 			var particles = new GameObject[capacity];
-			foreach (var p in particlefabs)
-				p.transform.localScale = 2f * constants.radius * Vector3.one;
-			for (var i = 0; i < capacity; i++)
-				particles[i] = particlefabs[Random.Range(0, particlefabs.Length)];
+			foreach (var pfab in particlefabs)
+				pfab.transform.localScale = 2f * constants.radius * Vector3.one;
+			for (var i = 0; i < capacity; i++) {
+				var pfab = particlefabs[Random.Range(0, particlefabs.Length)];
+				particles[i] = (GameObject)Instantiate(pfab, Vector3.zero, Random.rotationUniform);
+			}
 			Combiner = new MeshCombiner(containerfab);
 			Combiner.Rebuild(particles);
 			Combiner.SetParent(transform, false);
+			for (var i = 0; i < capacity; i++)
+				Destroy(particles[i]);
 			
 			UpdateConstantData();
 		}
@@ -69,8 +73,8 @@ namespace ParticlePhysics {
 				VelSimulation.Dispose();
 			if (PosSimulation != null)
 				PosSimulation.Dispose();
-			if (Broadphase != null)
-				Broadphase.Dispose();
+			if (Collisions != null)
+				Collisions.Dispose();
 			if (WallSolver != null)
 				WallSolver.Dispose();
 			if (ParticleSolver != null)
@@ -87,7 +91,7 @@ namespace ParticlePhysics {
 		void FixedUpdate() {
 			Constants.SetConstants(compute, Time.fixedDeltaTime);
 			VelSimulation.Simulate();
-			Broadphase.Detect(2f * constants.radius);
+			Collisions.Detect(2f * constants.radius);
 			for(var i = 0; i < 10; i++) {
 				WallSolver.Solve();
 				ParticleSolver.Solve();

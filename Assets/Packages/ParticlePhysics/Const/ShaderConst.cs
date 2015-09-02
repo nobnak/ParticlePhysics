@@ -26,6 +26,8 @@ namespace ParticlePhysics {
 		public const string PROP_DELTA_TIME = "dt";
 		public const string PROP_WALL_COUNT = "wallCount";
 		public const string PROP_ELASTICS = "elastics";
+		public const string PROP_FRICTION = "friction";
+		public const string PROP_DRAG = "dragCoeff";
 		public const string PROP_PARTICLE_RADIUS = "particleRadius";
 		public const string PROP_BOUNDS = "bounds";
 		public const string PROP_BROADPHASE_SQR_DISTANCE = "broadphaseSqrDistance";

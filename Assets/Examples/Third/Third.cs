@@ -53,7 +53,7 @@ public class Third : MonoBehaviour {
 		if (_particleAccumulation)
 			_reservedParticles += particleGenerationSpeed * Time.deltaTime;
 
-		if (_reservedParticles > ShaderConst.WARP_SIZE) {
+		while (_reservedParticles > ShaderConst.WARP_SIZE) {
 			_reservedParticles -= ShaderConst.WARP_SIZE;
 
 			var posisions = new Vector2[ShaderConst.WARP_SIZE];
