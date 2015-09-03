@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Text;
 
@@ -37,7 +37,7 @@ namespace ParticlePhysics {
 			Constants = new ConstantService(constants);
 			VelSimulation = new VelocitySimulation(compute, Velocities);
 			PosSimulation = new PositionSimulation(compute, Velocities, Positions);
-			Collisions = new SweepAndPrune(compute, computeSort, Lifes, Positions);
+			Collisions = new HashGrid(compute, computeSort, Lifes, Positions, GenerateGrid());
 			ParticleSolver = new ParticleCollisionSolver(compute, Velocities, Positions, Lifes, Collisions);
 			BoundsChecker = new BoundsChecker(compute, Lifes, Positions);
 			Walls = BuildWalls(wallColliders);
@@ -111,13 +111,20 @@ namespace ParticlePhysics {
 			Lifes.Upload (header, l);
 			header = (header + positions.Length) % capacity;
 		}
-		
+		public HashGrid.Grid GenerateGrid() {
+			var nx = 1<<6;
+			var ny = 1<<9;
+			var h = 2f * Camera.main.orthographicSize;
+			var w = h * Camera.main.aspect;
+			return new HashGrid.Grid(){ nx = nx, ny = ny, w = w, h = h };
+		}
 		void UpdateConstantData() {
 			var center = (Vector2)Camera.main.transform.position;
 			var h = 2f * Camera.main.orthographicSize;
 			var w = Camera.main.aspect * h;
 			constants.bounds = new Vector4(center.x - w, center.y - h, center.x + w, center.y + h);
 		}
+
 		static WallService BuildWalls(Transform[] wallColliders) {
 			var walls = new WallService (wallColliders.Length);
 			foreach (var collider in wallColliders)

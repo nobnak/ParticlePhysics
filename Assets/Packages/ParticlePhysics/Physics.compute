@@ -14,8 +14,8 @@
 #pragma kernel SolveParticleCollision
 #pragma kernel ClampVelocity
 #pragma kernel CheckBounds
-#pragma kernel InitBroadPhase
-#pragma kernel SolveBroadPhase
+#pragma kernel InitCollisionDetection
+#pragma kernel SolveCollisionDetection
 
 
 
@@ -51,11 +51,17 @@ float4 bounds;
 int uploadOffset;
 int uploadLength;
 int wallCount;
+int gridCapacity;
+int grid_nx, grid_ny;
+float grid_dx, grid_dy;
+float grid_w, grid_h;
 RWStructuredBuffer<float2> VelocitiesCurr;
 RWStructuredBuffer<float2> VelocitiesNext;
 RWStructuredBuffer<float2> Positions;
 RWStructuredBuffer<float> Lifes;
-RWStructuredBuffer<float> Ys;
+RWStructuredBuffer<int> Hashes;
+RWStructuredBuffer<uint> HashStarts;
+RWStructuredBuffer<uint> HashEnds;
 RWStructuredBuffer<Collision> Collisions;
 StructuredBuffer<float2> Uploader;
 StructuredBuffer<float> UploaderFloat;
@@ -194,14 +200,14 @@ void CheckBounds(uint3 id : SV_DispatchThreadID) {
 	}
 }
 [numthreads(WARP_SIZE,1,1)]
-void InitBroadPhase(uint3 id : SV_DispatchThreadID) {
+void InitCollisionDetection(uint3 id : SV_DispatchThreadID) {
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
 	float t = Lifes[i];
 	float2 x = Positions[i];
 	Ys[i] = (t > 0.0 ? x.y : MAX_VALUE);
 }
 [numthreads(WARP_SIZE,1,1)]
-void SolveBroadPhase(uint3 id : SV_DispatchThreadID) {
+void SolveCollisionDetection(uint3 id : SV_DispatchThreadID) {
 	uint ysCapa, stride;
 	Ys.GetDimensions(ysCapa, stride);
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
