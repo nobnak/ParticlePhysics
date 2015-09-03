@@ -27,7 +27,7 @@ namespace ParticlePhysics {
 		public WallCollisionSolver WallSolver { get; private set; }
 		public ParticleCollisionSolver ParticleSolver { get; private set; }
 		public BoundsChecker BoundsChecker { get; private set; }
-		public CollisionDetection Collisions { get; private set; }
+		public ICollisionDetection Collisions { get; private set; }
 		public MeshCombiner Combiner { get; private set; }
 		
 		void Start () {
@@ -37,7 +37,7 @@ namespace ParticlePhysics {
 			Constants = new ConstantService(constants);
 			VelSimulation = new VelocitySimulation(compute, Velocities);
 			PosSimulation = new PositionSimulation(compute, Velocities, Positions);
-			Collisions = new CollisionDetection(compute, computeSort, Lifes, Positions);
+			Collisions = new SweepAndPrune(compute, computeSort, Lifes, Positions);
 			ParticleSolver = new ParticleCollisionSolver(compute, Velocities, Positions, Lifes, Collisions);
 			BoundsChecker = new BoundsChecker(compute, Lifes, Positions);
 			Walls = BuildWalls(wallColliders);
