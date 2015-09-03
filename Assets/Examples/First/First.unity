@@ -113,7 +113,7 @@ Light:
   serializedVersion: 6
   m_Type: 1
   m_Color: {r: 1, g: .956862748, b: .839215696, a: 1}
-  m_Intensity: 1
+  m_Intensity: 2
   m_Range: 10
   m_SpotAngle: 30
   m_CookieSize: 10
@@ -259,11 +259,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   header: 0
-  capasity: 128
+  capacity: 1024
   compute: {fileID: 7200000, guid: 8ea81e5b29837604d8fa5917d2f32580, type: 3}
   particlefab: {fileID: 194522, guid: c6a9e382a363a8c45b1147045502f58c, type: 2}
   keyAdd: 97
-  keyRead: 114
+  keyReadPosition: 112
+  keyReadLife: 108
 --- !u!4 &1870686825
 Transform:
   m_ObjectHideFlags: 0

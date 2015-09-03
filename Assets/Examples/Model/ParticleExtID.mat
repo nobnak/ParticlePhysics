@@ -7,7 +7,7 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: ParticleExtID
-  m_Shader: {fileID: 4800000, guid: 0f5ee9da2c600cf46a0e73dd6c8d09a9, type: 3}
+  m_Shader: {fileID: 4800000, guid: c5994ad9ae3aacd4dbd303f1a35e22f5, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 5
   m_CustomRenderQueue: -1
@@ -38,4 +38,4 @@ Material:
       data:
         first:
           name: _Color
-        second: {r: 1, g: 1, b: 1, a: 1}
+        second: {r: .338235259, g: .591263056, b: 1, a: 1}
