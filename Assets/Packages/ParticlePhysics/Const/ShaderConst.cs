@@ -18,7 +18,9 @@ namespace ParticlePhysics {
 		public const string KERNEL_SOLVE_PARTICLE_COLLISION = "SolveParticleCollision";
 		public const string KERNEL_CLAMP_VELOCITY = "ClampVelocity";
 		public const string KERNEL_CHECK_BOUNDS = "CheckBounds";
-		public const string KERNEL_INIT_COLLISION_DETECTION = "InitCollisionDetection";
+		public const string KERNEL_INIT_HASHES = "InitHashes";
+		public const string KERNEL_INIT_GRID = "InitGrid";
+		public const string KERNEL_CONSTRUCT_GRID = "ConstructGrid";
 		public const string KERNEL_SOVLE_COLLISION_DETECTION = "SolveCollisionDetection";
 
 		public const string PROP_UPLOAD_OFFSET = "uploadOffset";
@@ -34,10 +36,7 @@ namespace ParticlePhysics {
 		public const string PROP_HASH_GRID_CAPACITY = "gridCapacity";
 		public const string PROP_HASH_GRID_NX = "grid_nx";
 		public const string PROP_HASH_GRID_NY = "grid_ny";
-		public const string PROP_HASH_GRID_DX = "grid_dx";
-		public const string PROP_HASH_GRID_DY = "grid_dy";
-		public const string PROP_HASH_GRID_W = "grid_w";
-		public const string PROP_HASH_GRID_H = "grid_h";
+		public const string PROP_HASH_GRID_PARAMS = "gridParams"; // grid_w, grid_h, grid_dxdw, grid_dydh;
 
 		public const string BUF_VELOCITY_CURR = "VelocitiesCurr";
 		public const string BUF_VELOCITY_NEXT = "VelocitiesNext";
@@ -47,8 +46,8 @@ namespace ParticlePhysics {
 		public const string BUF_WALL = "Walls";
 		public const string BUF_LIFE = "Lifes";
 		public const string BUF_HASHES = "Hashes";
-		public const string BUF_HASH_START = "HashStarts";
-		public const string BUF_HASH_END = "HashEnds";
+		public const string BUF_GRID_START = "GridStarts";
+		public const string BUF_GRID_END = "GridEnds";
 		public const string BUF_COLLISIONS = "Collisions";
 		public const string BUF_BROADPHASE_KEYS = "BroadphaseKeys";
 	}

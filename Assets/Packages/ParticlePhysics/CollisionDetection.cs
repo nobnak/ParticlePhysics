@@ -19,77 +19,54 @@ namespace ParticlePhysics {
 	public class HashGrid : ICollisionDetection {
 		public ComputeBuffer Collisions { get; private set; }
 
-		readonly Grid _grid;
 		readonly ComputeShader _compute;
 		readonly LifeService _lifes;
 		readonly PositionService _positions;
 
-		readonly int _kernelInit, _kernelSolve;
+		readonly int _kernelSolve;
 		readonly ComputeBuffer _keys;
-		readonly ComputeBuffer _hashes;
-		readonly ComputeBuffer _hashGridStart, _hashGridEnd;
+		readonly HashService _hashes;
 		readonly BitonicMergeSort _sort;
+		readonly GridService _grid;
 
-		public HashGrid(ComputeShader compute, ComputeShader computeSort, LifeService l, PositionService p, Grid g) {
+		public HashGrid(ComputeShader compute, ComputeShader computeSort, LifeService l, PositionService p, GridService.Grid g) {
 			var capacity = l.Lifes.count;
 			_compute = compute;
 			_lifes = l;
 			_positions = p;
-			_grid = g;
 
-			_kernelInit = compute.FindKernel(ShaderConst.KERNEL_INIT_COLLISION_DETECTION);
 			_kernelSolve = compute.FindKernel (ShaderConst.KERNEL_SOVLE_COLLISION_DETECTION);
 			_sort = new BitonicMergeSort(computeSort);
 			_keys = new ComputeBuffer(capacity, Marshal.SizeOf(typeof(uint)));
-			_hashes = new ComputeBuffer(capacity, Marshal.SizeOf(typeof(int)));
 			Collisions = new ComputeBuffer(capacity, Marshal.SizeOf(typeof(Collision)));
-
-			var gridCellCount = g.nx * g.ny;
-			_hashGridStart = new ComputeBuffer(gridCellCount, Marshal.SizeOf(typeof(uint)));
-			_hashGridEnd = new ComputeBuffer(gridCellCount, Marshal.SizeOf(typeof(uint)));
+			_grid = new GridService(compute, g);			
+			_hashes = new HashService(compute, l, p, _grid);
 		}
 
 		public void Detect(float distance) {
 			int x = _lifes.SimSizeX, y = _lifes.SimSizeY, z = _lifes.SimSizeZ;
-			SetParams(_compute);
-			_compute.SetBuffer(_kernelInit, ShaderConst.BUF_LIFE, _lifes.Lifes);
-			_compute.SetBuffer(_kernelInit, ShaderConst.BUF_POSITION, _positions.P0);
-			_compute.SetBuffer(_kernelInit, ShaderConst.BUF_HASHES, _hashes);
-			_compute.SetBuffer(_kernelInit, ShaderConst.BUF_HASH_START, _hashGridStart);
-			_compute.SetBuffer(_kernelInit, ShaderConst.BUF_HASH_END, _hashGridEnd);
-			_compute.Dispatch(_kernelInit, x, y, z);
+
+			_hashes.Init();
 
 			_sort.Init(_keys);
-			_sort.Sort(_keys, _hashes);
+			_sort.Sort(_keys, _hashes.Hashes);
 
-			SetParams(_compute);
+			_grid.Construct();
+
+			_grid.SetParams(_compute);
 			_compute.SetFloat(ShaderConst.PROP_BROADPHASE_SQR_DISTANCE, distance * distance);
-			_compute.SetBuffer(_kernelSolve, ShaderConst.BUF_HASHES, _hashes);
 			_compute.SetBuffer(_kernelSolve, ShaderConst.BUF_BROADPHASE_KEYS, _keys);
 			_compute.SetBuffer(_kernelSolve, ShaderConst.BUF_POSITION, _positions.P0);
+			_hashes.SetBuffer(_compute, _kernelSolve);
+			_grid.SetBuffer(_compute, _kernelSolve);
 			SetBuffer(_compute, _kernelSolve);
 			_compute.Dispatch(_kernelSolve, x, y, z);
 		}
-		public void SetParams(ComputeShader c) {
-			c.SetInt(ShaderConst.PROP_HASH_GRID_CAPACITY, _grid.nx * _grid.ny);
-			c.SetInt(ShaderConst.PROP_HASH_GRID_NX, _grid.nx);
-			c.SetInt(ShaderConst.PROP_HASH_GRID_NY, _grid.ny);
-			c.SetFloat(ShaderConst.PROP_HASH_GRID_DX, _grid.w / _grid.nx);
-			c.SetFloat(ShaderConst.PROP_HASH_GRID_DY, _grid.h / _grid.ny);
-			c.SetFloat(ShaderConst.PROP_HASH_GRID_W, _grid.w);
-			c.SetFloat(ShaderConst.PROP_HASH_GRID_H, _grid.h);
-		}
+
 		public void SetBuffer(ComputeShader c, int kernel) {
 			c.SetBuffer(kernel, ShaderConst.BUF_COLLISIONS, Collisions);
 		}
 
-		[StructLayout(LayoutKind.Sequential)]
-		public struct Grid {
-			public int nx;
-			public int ny;
-			public float w;
-			public float h;
-		}
 
 		#region IDisposable implementation
 		public void Dispose () {

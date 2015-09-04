@@ -14,13 +14,17 @@
 #pragma kernel SolveParticleCollision
 #pragma kernel ClampVelocity
 #pragma kernel CheckBounds
-#pragma kernel InitCollisionDetection
+#pragma kernel InitHashes
+#pragma kernel InitGrid
+#pragma kernel ConstructGrid
 #pragma kernel SolveCollisionDetection
 
 
 
 static const float2 G = float2(0, G_CONST);
 static const float MAX_VALUE = 10000.0;
+static const int DEAD_HASH = -1;
+static const int DEAD_GRID = -1;
 
 struct Wall {
 	float2 n;
@@ -53,15 +57,14 @@ int uploadLength;
 int wallCount;
 int gridCapacity;
 int grid_nx, grid_ny;
-float grid_dx, grid_dy;
-float grid_w, grid_h;
+float4 gridParams;
 RWStructuredBuffer<float2> VelocitiesCurr;
 RWStructuredBuffer<float2> VelocitiesNext;
 RWStructuredBuffer<float2> Positions;
 RWStructuredBuffer<float> Lifes;
 RWStructuredBuffer<int> Hashes;
-RWStructuredBuffer<uint> HashStarts;
-RWStructuredBuffer<uint> HashEnds;
+RWStructuredBuffer<uint> GridStarts;
+RWStructuredBuffer<uint> GridEnds;
 RWStructuredBuffer<Collision> Collisions;
 StructuredBuffer<float2> Uploader;
 StructuredBuffer<float> UploaderFloat;
@@ -199,37 +202,64 @@ void CheckBounds(uint3 id : SV_DispatchThreadID) {
 		Lifes[i] = 0.0;
 	}
 }
+int Hash(float2 pos) {
+	int2 ij = (int2)((pos - gridParams.xy * floor(pos / gridParams.xy)) * gridParams.zw);
+	ij = clamp(ij, 0, int2(grid_nx, grid_ny)-1);
+	return dot(ij, int2(1, grid_nx));
+}
+int2 RepeatGridIndex(int2 ij) {
+	int2 n = int2(grid_nx, grid_ny);
+	return ij - n * (int2)floor((float2)ij / n);
+}
 [numthreads(WARP_SIZE,1,1)]
-void InitCollisionDetection(uint3 id : SV_DispatchThreadID) {
+void InitHashes(uint3 id : SV_DispatchThreadID) {
+	uint capacity, stride;
+	Positions.GetDimensions(capacity, stride);
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
+	if (i >= capacity)
+		return;
+	
 	float t = Lifes[i];
 	float2 x = Positions[i];
-	Ys[i] = (t > 0.0 ? x.y : MAX_VALUE);
+	Hashes[i] = (t > 0.0 ? Hash(x) : DEAD_HASH);
+}
+[numthreads(WARP_SIZE,1,1)]
+void InitGrid(uint3 id : SV_DispatchThreadID) {
+	uint capacity, stride;
+	GridStart.GetDimensions(capacity, stride);
+	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
+	if (i >= capacity)
+		return;
+	
+	GridStart[i] = DEAD_GRID;
+	GridEnd[i] = DEAD_GRID;
+}
+[numthreads(WARP_SIZE,1,1)]
+void ConstructGrid(uint3 id : SV_DispatchThreadID) {
+	uint capacity, stride;
+	Hashes.GetDimensions(capacity, stride);
+	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
+	if (i >= capacity)
+		return;
+	
+	int hash = Hashes[BroadphaseKeys[i]];
+	if (i == 0 || hash != Hashes[BroadphaseKeys[i-1]])
+		GridStart[hash] = i;
+	if (i == (capacity-1) || hash != Hashes[BroadphaseKeys[i+1]])
+		GridEnd[hash] = i;
 }
 [numthreads(WARP_SIZE,1,1)]
 void SolveCollisionDetection(uint3 id : SV_DispatchThreadID) {
 	uint ysCapa, stride;
 	Ys.GetDimensions(ysCapa, stride);
-	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
-	uint centerKey = BroadphaseKeys[i];
+	uint k = dot(id.xy, uint2(1, MAX_X_THREADS));
+	uint centerKey = BroadphaseKeys[k];
 	float2 center = Positions[centerKey];
 	
-	uint tail = i - max(0, i - BAND_LIMIT);
-	uint head = min(ysCapa - 1, i + BAND_LIMIT) - i;
 	uint colliders[COLLIDER_CAPACITY];
 	uint count = 0;
-	for (uint di = 1; di <= BAND_LIMIT && count < COLLIDER_CAPACITY; di++) {
-		if (count < COLLIDER_CAPACITY && di <= tail) {
-			uint j = BroadphaseKeys[i - di];
-			float2 d = Positions[j] - center;
-			if (dot(d, d) < broadphaseSqrDistance)
-				colliders[count++] = j;
-		}
-		if (count < COLLIDER_CAPACITY && di <= head) {
-			uint j = BroadphaseKeys[i + di];
-			float2 d = Positions[j] - center;
-			if (dot(d, d) < broadphaseSqrDistance)
-				colliders[count++] = j;
+	for (uint di = -1; di <= 1; di++) {
+		for (uint dj = -1; dj <= 1; dj++) {
 		}
 	}
 	
