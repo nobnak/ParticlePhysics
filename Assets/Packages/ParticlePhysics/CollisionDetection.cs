@@ -39,25 +39,24 @@ namespace ParticlePhysics {
 			_sort = new BitonicMergeSort(computeSort);
 			_keys = new ComputeBuffer(capacity, Marshal.SizeOf(typeof(uint)));
 			Collisions = new ComputeBuffer(capacity, Marshal.SizeOf(typeof(Collision)));
-			_grid = new GridService(compute, g);			
-			_hashes = new HashService(compute, l, p, _grid);
+			_hashes = new HashService(compute, l, p);
+			_grid = new GridService(compute, g, _hashes);
 		}
 
 		public void Detect(float distance) {
 			int x = _lifes.SimSizeX, y = _lifes.SimSizeY, z = _lifes.SimSizeZ;
 
-			_hashes.Init();
+			_hashes.Init(_grid);
 
 			_sort.Init(_keys);
 			_sort.Sort(_keys, _hashes.Hashes);
 
-			_grid.Construct();
+			_grid.Construct(_keys);
 
 			_grid.SetParams(_compute);
 			_compute.SetFloat(ShaderConst.PROP_BROADPHASE_SQR_DISTANCE, distance * distance);
 			_compute.SetBuffer(_kernelSolve, ShaderConst.BUF_BROADPHASE_KEYS, _keys);
 			_compute.SetBuffer(_kernelSolve, ShaderConst.BUF_POSITION, _positions.P0);
-			_hashes.SetBuffer(_compute, _kernelSolve);
 			_grid.SetBuffer(_compute, _kernelSolve);
 			SetBuffer(_compute, _kernelSolve);
 			_compute.Dispatch(_kernelSolve, x, y, z);
@@ -76,10 +75,8 @@ namespace ParticlePhysics {
 				_keys.Dispose();
 			if (_hashes != null)
 				_hashes.Dispose();
-			if (_hashGridStart != null)
-				_hashGridStart.Dispose();
-			if (_hashGridEnd != null)
-				_hashGridEnd.Dispose();
+			if (_grid != null)
+				_grid.Dispose ();
 			if (Collisions != null)
 				Collisions.Dispose();
 		}

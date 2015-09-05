@@ -202,10 +202,13 @@ void CheckBounds(uint3 id : SV_DispatchThreadID) {
 		Lifes[i] = 0.0;
 	}
 }
+int Hash(int2 ij) {
+	return dot(ij, int2(1, grid_nx));
+}
 int Hash(float2 pos) {
 	int2 ij = (int2)((pos - gridParams.xy * floor(pos / gridParams.xy)) * gridParams.zw);
 	ij = clamp(ij, 0, int2(grid_nx, grid_ny)-1);
-	return dot(ij, int2(1, grid_nx));
+	return Hash(ij);
 }
 int2 RepeatGridIndex(int2 ij) {
 	int2 n = int2(grid_nx, grid_ny);
@@ -226,13 +229,13 @@ void InitHashes(uint3 id : SV_DispatchThreadID) {
 [numthreads(WARP_SIZE,1,1)]
 void InitGrid(uint3 id : SV_DispatchThreadID) {
 	uint capacity, stride;
-	GridStart.GetDimensions(capacity, stride);
+	GridStarts.GetDimensions(capacity, stride);
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
 	if (i >= capacity)
 		return;
 	
-	GridStart[i] = DEAD_GRID;
-	GridEnd[i] = DEAD_GRID;
+	GridStarts[i] = DEAD_GRID;
+	GridEnds[i] = DEAD_GRID;
 }
 [numthreads(WARP_SIZE,1,1)]
 void ConstructGrid(uint3 id : SV_DispatchThreadID) {
@@ -244,27 +247,51 @@ void ConstructGrid(uint3 id : SV_DispatchThreadID) {
 	
 	int hash = Hashes[BroadphaseKeys[i]];
 	if (i == 0 || hash != Hashes[BroadphaseKeys[i-1]])
-		GridStart[hash] = i;
+		GridStarts[hash] = i;
 	if (i == (capacity-1) || hash != Hashes[BroadphaseKeys[i+1]])
-		GridEnd[hash] = i;
+		GridEnds[hash] = i;
 }
 [numthreads(WARP_SIZE,1,1)]
 void SolveCollisionDetection(uint3 id : SV_DispatchThreadID) {
-	uint ysCapa, stride;
-	Ys.GetDimensions(ysCapa, stride);
-	uint k = dot(id.xy, uint2(1, MAX_X_THREADS));
-	uint centerKey = BroadphaseKeys[k];
-	float2 center = Positions[centerKey];
+	uint capacity, stride;
+	Positions.GetDimensions(capacity, stride);
+	uint g = dot(id.xy, uint2(1, MAX_X_THREADS));
+	if (g >= capacity)
+		return;
 	
+	uint key0 = BroadphaseKeys[g];
+	float2 pos0 = Positions[key0];
+	uint2 ij = Hash(pos0);
 	uint colliders[COLLIDER_CAPACITY];
 	uint count = 0;
-	for (uint di = -1; di <= 1; di++) {
-		for (uint dj = -1; dj <= 1; dj++) {
+	bool full = false;
+	for (uint i = 0; i < COLLIDER_CAPACITY; i++)
+		colliders[i] = 0;
+	[unroll] for (uint di = -1; di <= 1 && !full; di++) {
+		[unroll] for (uint dj = -1; dj <= 1 && !full; dj++) {
+			int hash = Hash(ij + int2(di, dj));
+			if (hash == DEAD_HASH)
+				continue;
+				
+			uint start = GridStarts[hash];
+			uint end = GridEnds[hash];
+			for (uint h = start; h <= end && !full; h++) {
+				if (g == h)
+					continue;
+				
+				uint key1 = BroadphaseKeys[h];
+				float2 pos1 = Positions[key1];
+				float2 d = pos1 - pos0;
+				if (dot(d, d) <= broadphaseSqrDistance) {
+					colliders[count++] = key1;
+					full = (count >= COLLIDER_CAPACITY);
+				}
+			}
 		}
 	}
 	
 	Collision b;
 	b.count = count;
 	b.colliders = colliders;
-	Collisions[centerKey] = b;
+	Collisions[key0] = b;
 }

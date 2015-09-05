@@ -111,12 +111,12 @@ namespace ParticlePhysics {
 			Lifes.Upload (header, l);
 			header = (header + positions.Length) % capacity;
 		}
-		public HashGrid.Grid GenerateGrid() {
+		public GridService.Grid GenerateGrid() {
 			var nx = 1<<6;
 			var ny = 1<<9;
 			var h = 2f * Camera.main.orthographicSize;
 			var w = h * Camera.main.aspect;
-			return new HashGrid.Grid(){ nx = nx, ny = ny, w = w, h = h };
+			return new GridService.Grid(){ nx = nx, ny = ny, w = w, h = h };
 		}
 		void UpdateConstantData() {
 			var center = (Vector2)Camera.main.transform.position;

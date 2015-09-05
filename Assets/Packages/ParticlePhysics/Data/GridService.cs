@@ -20,7 +20,7 @@ namespace ParticlePhysics {
 			_hashGridStart = new ComputeBuffer(gridCellCount, Marshal.SizeOf(typeof(uint)));
 			_hashGridEnd = new ComputeBuffer(gridCellCount, Marshal.SizeOf(typeof(uint)));
 		}
-		public void Construct() {
+		public void Construct(ComputeBuffer keys) {
 			int x, y, z;
 			SetParams(_compute);
 			ShaderUtil.CalcWorkSize(_hashGridStart.count, out x, out y, out z);
@@ -29,6 +29,7 @@ namespace ParticlePhysics {
 
 			ShaderUtil.CalcWorkSize(_hashes.Hashes.count, out x, out y, out z);
 			SetParams(_compute);
+			_compute.SetBuffer(_kernelConstruct, ShaderConst.BUF_BROADPHASE_KEYS, keys);
 			SetBuffer(_compute, _kernelConstruct);
 			_hashes.SetBuffer(_compute, _kernelConstruct);
 			_compute.Dispatch(_kernelConstruct, x, y, z);
