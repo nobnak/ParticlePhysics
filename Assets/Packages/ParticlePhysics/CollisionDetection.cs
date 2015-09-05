@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Runtime.InteropServices;
 using MergeSort;
+using System.Text;
 
 namespace ParticlePhysics {
 	public interface ICollisionDetection : System.IDisposable {
@@ -49,7 +50,7 @@ namespace ParticlePhysics {
 			_hashes.Init(_grid);
 
 			_sort.Init(_keys);
-			_sort.Sort(_keys, _hashes.Hashes);
+			_sort.SortInt(_keys, _hashes.Hashes);
 
 			_grid.Construct(_keys);
 

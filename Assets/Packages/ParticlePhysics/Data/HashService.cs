@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 namespace ParticlePhysics {
 	public class HashService : System.IDisposable {
 		public readonly ComputeBuffer Hashes;
+		public readonly int[] HashData;
 
 		readonly ComputeShader _compute;
 		readonly LifeService _lifes;
@@ -16,7 +17,9 @@ namespace ParticlePhysics {
 			_lifes = l;
 			_positions = p;
 			_kernelInitHashes = compute.FindKernel(ShaderConst.KERNEL_INIT_HASHES);
+			HashData = new int[l.Lifes.count];
 			Hashes = new ComputeBuffer(l.Lifes.count, Marshal.SizeOf(typeof(int)));
+			Hashes.SetData (HashData);
 		}
 		public void Init(GridService grid) {
 			int x = _lifes.SimSizeX, y = _lifes.SimSizeY, z = _lifes.SimSizeZ;
@@ -28,6 +31,9 @@ namespace ParticlePhysics {
 		}
 		public void SetBuffer(ComputeShader c, int kernel) {
 			c.SetBuffer(kernel, ShaderConst.BUF_HASHES, Hashes);
+		}
+		public void Download() {
+			Hashes.GetData (HashData);
 		}
 
 		#region IDisposable implementation

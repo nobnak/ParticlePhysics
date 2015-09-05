@@ -4,6 +4,8 @@ using System.Runtime.InteropServices;
 
 namespace ParticlePhysics {
 	public class GridService : System.IDisposable {
+		public readonly uint[] StartData, EndData;
+
 		readonly ComputeShader _compute;
 		readonly Grid _grid;
 		readonly HashService _hashes;
@@ -17,8 +19,13 @@ namespace ParticlePhysics {
 			_kernelInit = compute.FindKernel(ShaderConst.KERNEL_INIT_GRID);
 			_kernelConstruct = compute.FindKernel(ShaderConst.KERNEL_CONSTRUCT_GRID);
 			var gridCellCount = g.nx * g.ny;
+
+			StartData = new uint[gridCellCount];
+			EndData = new uint[gridCellCount];
 			_hashGridStart = new ComputeBuffer(gridCellCount, Marshal.SizeOf(typeof(uint)));
 			_hashGridEnd = new ComputeBuffer(gridCellCount, Marshal.SizeOf(typeof(uint)));
+			_hashGridStart.SetData (StartData);
+			_hashGridEnd.SetData (EndData);
 		}
 		public void Construct(ComputeBuffer keys) {
 			int x, y, z;
@@ -44,6 +51,10 @@ namespace ParticlePhysics {
 			c.SetBuffer(kernel, ShaderConst.BUF_GRID_START, _hashGridStart);
 			c.SetBuffer(kernel, ShaderConst.BUF_GRID_END, _hashGridEnd);
 		}
+		public void Download(){
+			_hashGridStart.GetData (StartData);
+			_hashGridEnd.GetData (EndData);
+		}
 
 		[StructLayout(LayoutKind.Sequential)]
 		public struct Grid {
@@ -55,6 +66,10 @@ namespace ParticlePhysics {
 
 		#region IDisposable implementation
 		public void Dispose () {
+			if (_hashGridStart != null)
+				_hashGridStart.Dispose ();
+			if (_hashGridEnd != null)
+				_hashGridEnd.Dispose ();
 		}
 		#endregion
 	}

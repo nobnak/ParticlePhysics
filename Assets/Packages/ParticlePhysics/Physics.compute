@@ -23,8 +23,8 @@
 
 static const float2 G = float2(0, G_CONST);
 static const float MAX_VALUE = 10000.0;
-static const int DEAD_HASH = -1;
-static const int DEAD_GRID = -1;
+static const int DEAD_HASH = 2147483647;
+static const uint DEAD_GRID = 4294967295;
 
 struct Wall {
 	float2 n;
@@ -275,6 +275,9 @@ void SolveCollisionDetection(uint3 id : SV_DispatchThreadID) {
 				
 			uint start = GridStarts[hash];
 			uint end = GridEnds[hash];
+			if (start == DEAD_GRID)
+				continue;
+			
 			for (uint h = start; h <= end && !full; h++) {
 				if (g == h)
 					continue;
