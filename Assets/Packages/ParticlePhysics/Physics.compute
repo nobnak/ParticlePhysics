@@ -21,23 +21,12 @@
 
 
 
+#include "Data/DataTypes.cginc"
+
 static const float2 G = float2(0, G_CONST);
 static const float MAX_VALUE = 10000.0;
 static const int DEAD_HASH = 2147483647;
 static const uint DEAD_GRID = 4294967295;
-
-struct Wall {
-	float2 n;
-	float2 t;
-	float dn;
-	float dt;
-	float w;
-	float h;
-};
-struct Collision {
-	uint count;
-	uint colliders[COLLIDER_CAPACITY];
-};
 
 static const float particleMass = 1;
 static const float impulsiveMassCoeff = particleMass / (particleMass + particleMass);
@@ -45,6 +34,7 @@ static const float distanceEpsilon = 0.001;
 static const float penetrationBias = 0.01;
 static const float penetrationSlop = 0.01;
 static const float maxSpeed = 20.0;
+
 float dt;
 float elastics;
 float friction = 0.2;

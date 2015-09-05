@@ -70,7 +70,7 @@ namespace ParticlePhysics {
 			c.SetBuffer(kernel, ShaderConst.BUF_COLLISIONS, Collisions);
 		}
 		public void SetGlobal() {
-			Shader.SetGlobalBuffer (ShaderConst.BUF_COLLISIONS, Collisions);
+			Shader.SetGlobalBuffer(ShaderConst.BUF_COLLISIONS, Collisions);
 		}
 		public void Download() {
 			Collisions.GetData (CollisionData);
