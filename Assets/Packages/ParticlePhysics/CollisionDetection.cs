@@ -9,6 +9,7 @@ namespace ParticlePhysics {
 		ComputeBuffer Collisions { get; }
 		void Detect(float distance);
 		void SetBuffer(ComputeShader c, int kernel);
+		void SetGlobal();
 		
 	}
 	[StructLayout(LayoutKind.Sequential)]
@@ -19,6 +20,7 @@ namespace ParticlePhysics {
 
 	public class HashGrid : ICollisionDetection {
 		public ComputeBuffer Collisions { get; private set; }
+		public readonly Collision[] CollisionData;
 
 		readonly ComputeShader _compute;
 		readonly LifeService _lifes;
@@ -39,6 +41,7 @@ namespace ParticlePhysics {
 			_kernelSolve = compute.FindKernel (ShaderConst.KERNEL_SOVLE_COLLISION_DETECTION);
 			_sort = new BitonicMergeSort(computeSort);
 			_keys = new ComputeBuffer(capacity, Marshal.SizeOf(typeof(uint)));
+			CollisionData = new Collision[capacity];
 			Collisions = new ComputeBuffer(capacity, Marshal.SizeOf(typeof(Collision)));
 			_hashes = new HashService(compute, l, p);
 			_grid = new GridService(compute, g, _hashes);
@@ -65,6 +68,12 @@ namespace ParticlePhysics {
 
 		public void SetBuffer(ComputeShader c, int kernel) {
 			c.SetBuffer(kernel, ShaderConst.BUF_COLLISIONS, Collisions);
+		}
+		public void SetGlobal() {
+			Shader.SetGlobalBuffer (ShaderConst.BUF_COLLISIONS, Collisions);
+		}
+		public void Download() {
+			Collisions.GetData (CollisionData);
 		}
 
 

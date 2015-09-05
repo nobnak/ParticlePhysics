@@ -33,7 +33,6 @@ namespace ParticlePhysics {
 		public const string PROP_PARTICLE_RADIUS = "particleRadius";
 		public const string PROP_BOUNDS = "bounds";
 		public const string PROP_BROADPHASE_SQR_DISTANCE = "broadphaseSqrDistance";
-		public const string PROP_HASH_GRID_CAPACITY = "gridCapacity";
 		public const string PROP_HASH_GRID_NX = "grid_nx";
 		public const string PROP_HASH_GRID_NY = "grid_ny";
 		public const string PROP_HASH_GRID_PARAMS = "gridParams"; // grid_w, grid_h, grid_dxdw, grid_dydh;

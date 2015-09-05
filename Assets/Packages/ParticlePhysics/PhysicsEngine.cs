@@ -87,6 +87,7 @@ namespace ParticlePhysics {
 			UpdateConstantData();
 			Positions.SetGlobal();
 			Lifes.SetGlobal();
+			Collisions.SetGlobal ();
 		}
 		void FixedUpdate() {
 			Constants.SetConstants(compute, Time.fixedDeltaTime);
@@ -112,10 +113,11 @@ namespace ParticlePhysics {
 			header = (header + positions.Length) % capacity;
 		}
 		public GridService.Grid GenerateGrid() {
-			var nx = 1<<4;
-			var ny = 1<<7;
 			var h = 2f * Camera.main.orthographicSize;
 			var w = h * Camera.main.aspect;
+			var diam = 2f * constants.radius;
+			var nx = Mathf.FloorToInt(w / diam);
+			var ny = Mathf.FloorToInt (h / diam);
 			return new GridService.Grid(){ nx = nx, ny = ny, w = w, h = h };
 		}
 		void UpdateConstantData() {

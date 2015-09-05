@@ -42,7 +42,6 @@ namespace ParticlePhysics {
 			_compute.Dispatch(_kernelConstruct, x, y, z);
 		}
 		public void SetParams(ComputeShader c) {
-			c.SetInt(ShaderConst.PROP_HASH_GRID_CAPACITY, _grid.nx * _grid.ny);
 			c.SetInt(ShaderConst.PROP_HASH_GRID_NX, _grid.nx);
 			c.SetInt(ShaderConst.PROP_HASH_GRID_NY, _grid.ny);
 			c.SetVector(ShaderConst.PROP_HASH_GRID_PARAMS, new Vector4(_grid.w, _grid.h, _grid.nx / _grid.w, _grid.ny / _grid.h));

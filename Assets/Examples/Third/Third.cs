@@ -53,10 +53,11 @@ public class Third : MonoBehaviour {
 		if (_particleAccumulation)
 			_reservedParticles += particleGenerationSpeed * Time.deltaTime;
 
-		while (_reservedParticles > ShaderConst.WARP_SIZE) {
-			_reservedParticles -= ShaderConst.WARP_SIZE;
+		var bulk = ShaderConst.WARP_SIZE;
+		while (_reservedParticles >= bulk) {
+			_reservedParticles -= bulk;
 
-			var posisions = new Vector2[ShaderConst.WARP_SIZE];
+			var posisions = new Vector2[bulk];
 			for (var i = 0; i < posisions.Length; i++) {
 				var posLocal = new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f));
 				var tr = emitters[Random.Range(0, emitters.Length)];

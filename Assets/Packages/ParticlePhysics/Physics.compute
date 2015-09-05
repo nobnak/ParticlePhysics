@@ -55,7 +55,6 @@ float4 bounds;
 int uploadOffset;
 int uploadLength;
 int wallCount;
-int gridCapacity;
 int grid_nx, grid_ny;
 float4 gridParams;
 RWStructuredBuffer<float2> VelocitiesCurr;
@@ -205,10 +204,10 @@ void CheckBounds(uint3 id : SV_DispatchThreadID) {
 int Hash(int2 ij) {
 	return dot(ij, int2(1, grid_nx));
 }
-int Hash(float2 pos) {
+int2 GridIndex(float2 pos) {
 	int2 ij = (int2)((pos - gridParams.xy * floor(pos / gridParams.xy)) * gridParams.zw);
 	ij = clamp(ij, 0, int2(grid_nx, grid_ny)-1);
-	return Hash(ij);
+	return ij;
 }
 int2 RepeatGridIndex(int2 ij) {
 	int2 n = int2(grid_nx, grid_ny);
@@ -224,7 +223,7 @@ void InitHashes(uint3 id : SV_DispatchThreadID) {
 	
 	float t = Lifes[i];
 	float2 x = Positions[i];
-	Hashes[i] = (t > 0.0 ? Hash(x) : DEAD_HASH);
+	Hashes[i] = (t > 0.0 ? Hash(GridIndex(x)) : DEAD_HASH);
 }
 [numthreads(WARP_SIZE,1,1)]
 void InitGrid(uint3 id : SV_DispatchThreadID) {
@@ -246,10 +245,12 @@ void ConstructGrid(uint3 id : SV_DispatchThreadID) {
 		return;
 	
 	int hash = Hashes[BroadphaseKeys[i]];
+	if (hash == DEAD_HASH)
+		return;
 	if (i == 0 || hash != Hashes[BroadphaseKeys[i-1]])
 		GridStarts[hash] = i;
 	if (i == (capacity-1) || hash != Hashes[BroadphaseKeys[i+1]])
-		GridEnds[hash] = i;
+		GridEnds[hash] = i+1;
 }
 [numthreads(WARP_SIZE,1,1)]
 void SolveCollisionDetection(uint3 id : SV_DispatchThreadID) {
@@ -261,24 +262,19 @@ void SolveCollisionDetection(uint3 id : SV_DispatchThreadID) {
 	
 	uint key0 = BroadphaseKeys[g];
 	float2 pos0 = Positions[key0];
-	uint2 ij = Hash(pos0);
+	uint2 ij = GridIndex(pos0);
 	uint colliders[COLLIDER_CAPACITY];
 	uint count = 0;
-	bool full = false;
-	for (uint i = 0; i < COLLIDER_CAPACITY; i++)
-		colliders[i] = 0;
-	[unroll] for (uint di = -1; di <= 1 && !full; di++) {
-		[unroll] for (uint dj = -1; dj <= 1 && !full; dj++) {
-			int hash = Hash(ij + int2(di, dj));
-			if (hash == DEAD_HASH)
-				continue;
-				
+	bool empty = true;
+	for (int di = -1; di <= 1 && empty; di++) {
+		for (int dj = -1; dj <= 1 && empty; dj++) {
+			int hash = Hash(RepeatGridIndex(ij + int2(di, dj)));
 			uint start = GridStarts[hash];
 			uint end = GridEnds[hash];
 			if (start == DEAD_GRID)
 				continue;
 			
-			for (uint h = start; h <= end && !full; h++) {
+			for (uint h = start; h < end && empty; h++) {
 				if (g == h)
 					continue;
 				
@@ -287,7 +283,7 @@ void SolveCollisionDetection(uint3 id : SV_DispatchThreadID) {
 				float2 d = pos1 - pos0;
 				if (dot(d, d) <= broadphaseSqrDistance) {
 					colliders[count++] = key1;
-					full = (count >= COLLIDER_CAPACITY);
+					empty = (count < COLLIDER_CAPACITY);
 				}
 			}
 		}
