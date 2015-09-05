@@ -1,6 +1,6 @@
 # GPU-based Mass Point Physics for Unity
  * Mass Point Physics on GPU
- * Sweep and Prune Algorithm on Y-Axis (Collision Detection)
+ * Hash Grid for Fast Collision Detection
  * Impulse-based Physics
  * Mesh-based Particles
 
