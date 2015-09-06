@@ -4,6 +4,8 @@
  * Impulse-based Physics
  * Mesh-based Particles
 
+[Unity Package](Html/ParticlePhysics.unitypackage)
+
 [![Vimeo](Html/GPUSand.png)](https://vimeo.com/137930819)
 
 ## References
