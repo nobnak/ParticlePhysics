@@ -1,5 +1,5 @@
-# GPU-based Mass Point Physics for Unity
- * Mass Point Physics on GPU
+# GPU-based 2D Mass Point Physics for Unity
+ * 2D Mass Point Physics on GPU
  * Hash Grid for Fast Collision Detection
  * Impulse-based Physics
  * Mesh-based Particles
