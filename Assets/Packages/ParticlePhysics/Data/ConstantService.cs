@@ -15,6 +15,7 @@ namespace ParticlePhysics {
 			compute.SetFloat(ShaderConst.PROP_FRICTION, _data.friction);
 			compute.SetFloat(ShaderConst.PROP_DRAG, _data.dragCoeff);
 			compute.SetFloat(ShaderConst.PROP_PARTICLE_RADIUS, _data.radius);
+			compute.SetFloat(ShaderConst.PROP_PENETRATION_BIAS, _data.penetrationBias);
 			compute.SetVector(ShaderConst.PROP_BOUNDS, _data.bounds);
 		}
 
@@ -29,6 +30,7 @@ namespace ParticlePhysics {
 			public float friction = 0.2f;
 			public float dragCoeff = 0.01f;
 			public float radius = 1f;
+			public float penetrationBias = 0.1f;
 			public Vector4 bounds = new Vector4(-100f, -100f, 100f, 100f);
 		}
 	}

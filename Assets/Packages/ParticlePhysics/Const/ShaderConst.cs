@@ -31,6 +31,7 @@ namespace ParticlePhysics {
 		public const string PROP_FRICTION = "friction";
 		public const string PROP_DRAG = "dragCoeff";
 		public const string PROP_PARTICLE_RADIUS = "particleRadius";
+		public const string PROP_PENETRATION_BIAS = "penetrationBias";
 		public const string PROP_BOUNDS = "bounds";
 		public const string PROP_BROADPHASE_SQR_DISTANCE = "broadphaseSqrDistance";
 		public const string PROP_HASH_GRID_NX = "grid_nx";
