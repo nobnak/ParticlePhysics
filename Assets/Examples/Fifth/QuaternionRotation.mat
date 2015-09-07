@@ -35,3 +35,7 @@ Material:
         first:
           name: _Color
         second: {r: 1, g: 1, b: 1, a: 1}
+      data:
+        first:
+          name: _Quaternion
+        second: {r: .624836087, g: -.63084501, b: -.0522734635, a: .457036197}

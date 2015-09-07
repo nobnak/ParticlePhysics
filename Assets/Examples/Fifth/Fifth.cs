@@ -2,14 +2,19 @@
 using System.Collections;
 
 public class Fifth : MonoBehaviour {
+	public const string PROP_QUATERNION = "_Quaternion";
 
-	// Use this for initialization
+	public GameObject qrot;
+	public Transform controller;
+
+	Material _mat;
+
 	void Start () {
-	
+		_mat = qrot.GetComponent<Renderer> ().sharedMaterial;
 	}
-	
-	// Update is called once per frame
 	void Update () {
-	
+		var rot = controller.rotation;
+		var quaternion = new Vector4 (rot.x, rot.y, rot.z, rot.w);
+		_mat.SetVector (PROP_QUATERNION, quaternion);
 	}
 }

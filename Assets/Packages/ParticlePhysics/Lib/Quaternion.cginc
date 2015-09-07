@@ -1,0 +1,11 @@
+#ifndef __QUATERNION__
+#define __QUATERNION__
+
+float4 qmul(float4 a, float4 b) {
+	return float4(a.w * b.xyz + b.w * a.xyz + cross(a.xyz, b.xyz), a.w * b.w - dot(a.xyz, b.xyz));
+}
+float3 qrotate(float4 q, float3 v) {
+	return qmul(qmul(q, float4(v, 0)), float4(-q.xyz, q.w));
+}
+
+#endif
