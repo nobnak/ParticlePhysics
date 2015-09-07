@@ -603,10 +603,10 @@ MonoBehaviour:
   - {fileID: 347302804}
   constants:
     elastics: .100000001
-    friction: 1
+    friction: .5
     dragCoeff: .0199999996
     radius: .0500000007
-    penetrationBias: .300000012
+    penetrationBias: .100000001
     bounds: {x: -100, y: -100, z: 100, w: 100}
   containerfab: {fileID: 194522, guid: 0b323baab75d02a47ae2941a533e285d, type: 2}
   particlefabs:
