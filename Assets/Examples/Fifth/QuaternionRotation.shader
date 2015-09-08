@@ -4,7 +4,6 @@
 		_MainTex ("Albedo (RGB)", 2D) = "white" {}
 		_Glossiness ("Smoothness", Range(0,1)) = 0.5
 		_Metallic ("Metallic", Range(0,1)) = 0.0
-		_Quaternion ("Quaternion", Vector) = (0, 0, 0, 1)
 	}
 	SubShader {
 		Tags { "RenderType"="Opaque" }
@@ -24,24 +23,36 @@
 		half _Glossiness;
 		half _Metallic;
 		fixed4 _Color;
-		float4 _Quaternion;
+		float4 _Rotation;
+		
+		#ifdef SHADER_API_D3D11
+		StructuredBuffer<float3> Positions;
+		StructuredBuffer<float4> Quaternions;
+		#endif
 		
 		void vert(inout appdata_full v, out Input o) {
 			UNITY_INITIALIZE_OUTPUT(Input,o);
-			v.vertex.xyz = qrotate(_Quaternion, v.vertex.xyz);
-			v.normal.xyz = qrotate(_Quaternion, v.normal.xyz);
+			#ifdef SHADER_API_D3D11
+			int id = round(v.texcoord1.x);
+			
+			float3 pos = Positions[id];
+			float4 q = normalize(qmul(_Rotation, Quaternions[id]));
+			
+			v.vertex.xyz = qrotate(q, v.vertex.xyz);
+			v.normal.xyz = qrotate(q, v.normal.xyz);
+			float3 posWorld = mul(_Object2World, float4(v.vertex.xyz, 1.0)).xyz + pos;
+			v.vertex.xyz = mul(_World2Object, float4(posWorld, 1.0));
+			#endif
 		}
 
 		void surf (Input IN, inout SurfaceOutputStandard o) {
-			// Albedo comes from a texture tinted by color
 			fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
 			o.Albedo = c.rgb;
-			// Metallic and smoothness come from slider variables
 			o.Metallic = _Metallic;
 			o.Smoothness = _Glossiness;
 			o.Alpha = c.a;
 		}
 		ENDCG
 	} 
-	FallBack "Diffuse"
+	FallBack Off
 }

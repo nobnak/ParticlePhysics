@@ -25,11 +25,11 @@ Material:
       data:
         first:
           name: _Glossiness
-        second: .5
+        second: .674000025
       data:
         first:
           name: _Metallic
-        second: 0
+        second: 1
     m_Colors:
       data:
         first:
@@ -37,5 +37,9 @@ Material:
         second: {r: 1, g: 1, b: 1, a: 1}
       data:
         first:
+          name: _SpecColor
+        second: {r: 0, g: 1, b: .0294117928, a: 1}
+      data:
+        first:
           name: _Quaternion
-        second: {r: -.853312254, g: .304805636, b: .390651643, a: -.162305504}
+        second: {r: .0185863711, g: -.112639472, b: .989245236, a: -.0914371461}
