@@ -28,7 +28,8 @@
 		
 		void vert(inout appdata_full v, out Input o) {
 			UNITY_INITIALIZE_OUTPUT(Input,o);
-			v.vertex.xyz = qrotate(_Quaternion, v.vertex.xyz);	
+			v.vertex.xyz = qrotate(_Quaternion, v.vertex.xyz);
+			v.normal.xyz = qrotate(_Quaternion, v.normal.xyz);
 		}
 
 		void surf (Input IN, inout SurfaceOutputStandard o) {
