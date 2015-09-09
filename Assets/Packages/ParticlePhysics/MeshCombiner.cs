@@ -96,7 +96,7 @@ namespace ParticlePhysics {
 				var matit = mat.inverse.transpose;
 				for (var i = 0; i < mesh.vertexCount; i++) {
 					vertices[vertexCount] = mat.MultiplyPoint3x4(vs[i]);
-					normals[vertexCount] = matit.MultiplyVector(ns[i]);
+					normals[vertexCount] = matit.MultiplyVector(ns[i]).normalized;
 					uvs[vertexCount] = uv[i];
 					uv2s[vertexCount] = uv2;
 					vertexCount++;

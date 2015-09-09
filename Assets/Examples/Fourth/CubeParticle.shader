@@ -35,7 +35,7 @@ struct Input {
 
 void vert(inout appdata_full v, out Input o) {
 	UNITY_INITIALIZE_OUTPUT(Input,o);
-	int id = round(v.texcoord1.x);
+	uint id = (uint)round(v.texcoord1.x);
 	o.color = colors[id % COLORS_COUNT];
 }
 void surf (Input IN, inout SurfaceOutput o) {
