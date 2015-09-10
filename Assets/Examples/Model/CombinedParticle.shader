@@ -4,6 +4,7 @@
 		_MainTex ("Albedo (RGB)", 2D) = "white" {}
 		_Glossiness ("Smoothness", Range(0,1)) = 0.5
 		_Metallic ("Metallic", Range(0,1)) = 0.0
+		_Angular ("Angular Speed", Vector) = (1, 1, 1, 1)
 	}
 	SubShader {
 		Tags { "RenderType"="Opaque" }
@@ -17,7 +18,7 @@
 		
 		#ifdef SHADER_API_D3D11
 		#include "../../Packages/ParticlePhysics/Lib/DataTypes.cginc"
-		int _Id;
+		#include "../../Packages/ParticlePhysics/Lib/Quaternion.cginc"
 		StructuredBuffer<float2> Positions;
 		StructuredBuffer<float> Lifes;
 		StructuredBuffer<Collision> Collisions;
@@ -27,6 +28,7 @@
 		half _Glossiness;
 		half _Metallic;
 		fixed4 _Color;
+		fixed4 _Angular;
 
 		struct Input {
 			float2 uv_MainTex;
@@ -38,22 +40,19 @@
 			#ifdef SHADER_API_D3D11
 			int id = round(v.texcoord1.x);
 			float life = Lifes[id];
-			Collision c = Collisions[id];
-			o.color = lerp(float4(0, 0, 0, 1), float4(1, 0, 0, 1), c.count / 5.0);
-			float3 worldPos = mul(_Object2World, float4(v.vertex.xyz, 1)).xyz;
-			if (life > 0)
-				worldPos.xy += Positions[id];
-			else
+			//Collision c = Collisions[id];
+			//o.color = lerp(float4(0, 0, 0, 1), float4(1, 0, 0, 1), c.count / 5.0);
+			float2 pos = Positions[id];
+			float3 worldPos = mul(_Object2World, float4(v.vertex.xyz, 1)).xyz + float3(pos, 0);
+			if (life <= 0)
 				worldPos = HIDDEN_POSITION;
 			v.vertex.xyz = mul(_World2Object, float4(worldPos, 1)).xyz;
 			#endif
 		}
 
 		void surf (Input IN, inout SurfaceOutputStandard o) {
-			// Albedo comes from a texture tinted by color
 			fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
 			o.Albedo = c.rgb;
-			// Metallic and smoothness come from slider variables
 			o.Metallic = _Metallic;
 			o.Smoothness = _Glossiness;
 			o.Alpha = c.a;

@@ -258,8 +258,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e32a6a8a03ae0be4a81937a7a7d5fe0b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  count: 10000
+  count: 500
   radius: 100
+  computeRotation: {fileID: 7200000, guid: f2f0bfdb12c00b64e856af6ef0e5f742, type: 3}
   container: {fileID: 172768, guid: 5f1e9ad22d7f07f48bed023a43764a08, type: 2}
   particlefab: {fileID: 189250, guid: 68b981aab37496440b31817c88cfc618, type: 2}
   controller: {fileID: 1850476049}

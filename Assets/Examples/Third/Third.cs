@@ -53,8 +53,8 @@ public class Third : MonoBehaviour {
 		if (_particleAccumulation)
 			_reservedParticles += particleGenerationSpeed * Time.deltaTime;
 
-		var bulk = ShaderConst.WARP_SIZE;
-		while (_reservedParticles >= bulk) {
+		var bulk = 0;
+		while ((bulk = Mathf.Min((int)_reservedParticles, ShaderConst.WARP_SIZE)) > 1) {
 			_reservedParticles -= bulk;
 
 			var posisions = new Vector2[bulk];

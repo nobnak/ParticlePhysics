@@ -19,7 +19,8 @@ namespace ParticlePhysics {
 			var combined = new List<GameObject>();
 			foreach (var group in SplitInGroups(Convert(particles))) {
 				var go = (GameObject)GameObject.Instantiate(_container);
-				go.GetComponent<MeshFilter>().sharedMesh = Combine(group);
+				var mesh = go.GetComponent<MeshFilter>().sharedMesh = Combine(group);
+				mesh.bounds = new Bounds(Vector3.zero, 1000f * Vector3.one);
 				combined.Add(go);
 			}
 			Combined = combined.ToArray();

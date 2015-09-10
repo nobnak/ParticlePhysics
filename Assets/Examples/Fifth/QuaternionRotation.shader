@@ -4,6 +4,7 @@
 		_MainTex ("Albedo (RGB)", 2D) = "white" {}
 		_Glossiness ("Smoothness", Range(0,1)) = 0.5
 		_Metallic ("Metallic", Range(0,1)) = 0.0
+		_Angular ("Angular Speed", Vector) = (1,1,1,1)
 	}
 	SubShader {
 		Tags { "RenderType"="Opaque" }
@@ -23,11 +24,10 @@
 		half _Glossiness;
 		half _Metallic;
 		fixed4 _Color;
-		float4 _Rotation;
 		
 		#ifdef SHADER_API_D3D11
 		StructuredBuffer<float3> Positions;
-		StructuredBuffer<float4> Quaternions;
+		StructuredBuffer<float4> Rotations;
 		#endif
 		
 		void vert(inout appdata_full v, out Input o) {
@@ -36,7 +36,7 @@
 			int id = round(v.texcoord1.x);
 			
 			float3 pos = Positions[id];
-			float4 q = normalize(qmul(_Rotation, Quaternions[id]));
+			float4 q = Rotations[id];
 			
 			v.vertex.xyz = qrotate(q, v.vertex.xyz);
 			v.normal.xyz = qrotate(q, v.normal.xyz);
