@@ -567,7 +567,8 @@ MonoBehaviour:
   physics: {fileID: 1889913063}
   emitters:
   - {fileID: 186484740}
-  particleGenerationSpeed: 1000
+  particleGenerationSpeed: 10
+  computeRotation: {fileID: 7200000, guid: f2f0bfdb12c00b64e856af6ef0e5f742, type: 3}
 --- !u!4 &1889913062
 Transform:
   m_ObjectHideFlags: 0
@@ -605,7 +606,7 @@ MonoBehaviour:
     elastics: .100000001
     friction: .5
     dragCoeff: .0199999996
-    radius: .0500000007
+    radius: .5
     penetrationBias: .100000001
     bounds: {x: -100, y: -100, z: 100, w: 100}
   containerfab: {fileID: 194522, guid: 0b323baab75d02a47ae2941a533e285d, type: 2}

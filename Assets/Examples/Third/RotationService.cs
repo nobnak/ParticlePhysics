@@ -39,6 +39,7 @@ public class RotationService : System.IDisposable {
 		_compute.SetBuffer(_kernelVelocityBasedRotate, BUF_ROTATION, _rotations);
 		_compute.Dispatch(_kernelVelocityBasedRotate, SimSizeX, SimSizeY, SimSizeZ);
 	}
+	public void SetGlobal() { Shader.SetGlobalBuffer(BUF_ROTATION, _rotations); }
 	public void SetQuaternion(Quaternion[] q) {
 		for (var i = 0; i < Count; i++)
 			_data[i] = q[i].Convert();

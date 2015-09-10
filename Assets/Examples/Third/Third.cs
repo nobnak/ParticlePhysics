@@ -13,11 +13,25 @@ public class Third : MonoBehaviour {
 	public PhysicsEngine physics;
 	public Transform[] emitters;
 	public float particleGenerationSpeed = 100f;
+	public ComputeShader computeRotation;
 
 	bool _particleAccumulation = false;
 	float _reservedParticles = 0f;
-	
+	RotationService _rotation;
+
+	IEnumerator Start() {
+		while (!physics.Initialized)
+			yield return null;
+		_rotation = new RotationService(computeRotation, physics.Velocities, physics.Lifes);
+	}
+	void OnDestroy() {
+		if (_rotation != null)
+			_rotation.Dispose();
+	}
 	void Update () {
+		if (_rotation == null)
+			return;
+
 		if (Input.GetKeyDown(keyAdd))
 			_particleAccumulation = !_particleAccumulation;
 		if (Input.GetKeyDown (keyReadPositions)) {
@@ -48,6 +62,9 @@ public class Third : MonoBehaviour {
 		}
 
 		GenerateParticles();
+
+		_rotation.VelocityBasedRotate(Time.deltaTime);
+		_rotation.SetGlobal();
 	}
 	void GenerateParticles() {
 		if (_particleAccumulation)

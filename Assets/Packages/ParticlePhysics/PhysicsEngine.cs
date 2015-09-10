@@ -16,7 +16,10 @@ namespace ParticlePhysics {
 		
 		public GameObject containerfab;
 		public GameObject[] particlefabs;
-		
+
+		private bool _initialized = false;
+
+		public bool Initialized { get { return _initialized; } }
 		public PositionService Positions { get; private set; }
 		public VelocityService Velocities { get; private set; }
 		public LifeService Lifes { get; private set; }
@@ -29,7 +32,10 @@ namespace ParticlePhysics {
 		public BoundsChecker BoundsChecker { get; private set; }
 		public ICollisionDetection Collisions { get; private set; }
 		public MeshCombiner Combiner { get; private set; }
-		
+
+		void Awake() {
+
+		}
 		void Start () {
 			Positions = new PositionService(compute, capacity);
 			Velocities = new VelocityService(compute, capacity);
@@ -57,6 +63,7 @@ namespace ParticlePhysics {
 				Destroy(particles[i]);
 			
 			UpdateConstantData();
+			_initialized = true;
 		}
 		void OnDestroy() {
 			if (Positions != null)
