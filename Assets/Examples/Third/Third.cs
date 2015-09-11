@@ -14,6 +14,7 @@ public class Third : MonoBehaviour {
 	public Transform[] emitters;
 	public float particleGenerationSpeed = 100f;
 	public ComputeShader computeRotation;
+	public Vector2 angularSpeedRange = new Vector2(0f, 1f);
 
 	bool _particleAccumulation = false;
 	float _reservedParticles = 0f;
@@ -22,7 +23,8 @@ public class Third : MonoBehaviour {
 	IEnumerator Start() {
 		while (!physics.Initialized)
 			yield return null;
-		_rotation = new RotationService(computeRotation, physics.Velocities, physics.Lifes);
+		_rotation = new RotationService(computeRotation, physics.Velocities, physics.Lifes, 
+		                                physics.constants.radius, angularSpeedRange);
 	}
 	void OnDestroy() {
 		if (_rotation != null)

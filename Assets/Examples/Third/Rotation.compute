@@ -9,7 +9,6 @@
 
 static const float EPSILON = 1.0e-6;
 static const float3 AXIS_Z = float3(0, 0, 1);
-static const float SPEED2ANGLE = 1.0;
 
 float dt;
 float uniformSpeed;
@@ -17,14 +16,15 @@ float4 uniformForward;
 StructuredBuffer<float> Lifes;
 StructuredBuffer<float2> VelocitiesCurr;
 StructuredBuffer<float2> VelocitiesNext;
+StructuredBuffer<float> AngularSpeed;
 RWStructuredBuffer<float4> Rotations;
 
 
 
-float4 Rotation(float3 forward, float speed) {
+float4 Rotation(float3 forward, float speed, uint id) {
 	float3 axis_x = forward;
 	float3 axis_y = cross(AXIS_Z, axis_x);
-	float angle = speed * SPEED2ANGLE * dt;
+	float angle = speed * dt * AngularSpeed[id % WARP_SIZE];
 	return float4(axis_y * sin(angle), cos(angle));
 }
 [numthreads(WARP_SIZE,1,1)]
@@ -40,14 +40,14 @@ void RotateOnVelocity (uint3 id : SV_DispatchThreadID) {
 		return;
 	
 	float3 forward = float3((1.0 / speed) * v, 0);
-	float4 q = Rotation(forward, speed);
+	float4 q = Rotation(forward, speed, i);
 	Rotations[i] = normalize(qmul(q, Rotations[i]));
 }
 [numthreads(WARP_SIZE,1,1)]
 void RotateOnUniformVelocity (uint3 id : SV_DispatchThreadID) {
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
 	if (uniformSpeed > EPSILON) {
-		float4 q = Rotation(uniformForward.xyz, uniformSpeed);
+		float4 q = Rotation(uniformForward.xyz, uniformSpeed, i);
 		Rotations[i] = normalize(qmul(q, Rotations[i]));
 	}
 }

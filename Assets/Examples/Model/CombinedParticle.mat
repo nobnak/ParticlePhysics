@@ -30,11 +30,11 @@ Material:
       data:
         first:
           name: _Glossiness
-        second: .513999999
+        second: .574999988
       data:
         first:
           name: _Metallic
-        second: .358999997
+        second: .470999986
       data:
         first:
           name: _Id
@@ -43,7 +43,7 @@ Material:
       data:
         first:
           name: _Color
-        second: {r: 1, g: .797688007, b: .516000032, a: 1}
+        second: {r: 1, g: .870970607, b: .397058845, a: 1}
       data:
         first:
           name: _SpecColor
