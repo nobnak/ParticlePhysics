@@ -30,11 +30,11 @@ Material:
       data:
         first:
           name: _Glossiness
-        second: 1
+        second: .513999999
       data:
         first:
           name: _Metallic
-        second: 0
+        second: .358999997
       data:
         first:
           name: _Id
