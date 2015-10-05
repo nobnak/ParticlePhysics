@@ -374,7 +374,7 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1057544111}
-  m_LocalRotation: {x: 0, y: 0, z: .160656542, w: .98701036}
+  m_LocalRotation: {x: 0, y: 0, z: -.173648223, w: .984807789}
   m_LocalPosition: {x: -11.5200005, y: 4.23000002, z: 0}
   m_LocalScale: {x: 5, y: .5, z: 1}
   m_Children: []
@@ -560,7 +560,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fall: 1
-  particleGenerationSpeed: 3000
+  particleGenerationSpeed: 10000
   angularSpeedRange: {x: 0, y: 1}
   physics: {fileID: 1889913063}
   computeRotation: {fileID: 7200000, guid: f2f0bfdb12c00b64e856af6ef0e5f742, type: 3}
@@ -590,14 +590,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   particleCollisionEnabled: 0
-  capacity: 32768
+  capacity: 100000
   constants:
     timeScale: 1
     elastics: .100000001
-    friction: .5
+    friction: .100000001
     dragCoeff: .0199999996
     dragCoeffDeviation: .100000001
-    radius: .0500000007
+    radius: .0199999996
     penetrationBias: .100000001
     bounds: {x: -100, y: -100, z: 100, w: 100}
   header: 0
