@@ -21,8 +21,6 @@ namespace ParticlePhysics {
 		public GameObject containerfab;
 		public GameObject[] particlefabs;
 
-		private bool _initialized = false;
-
 		public bool Initialized { get { return _initialized; } }
 		public PositionService Positions { get; private set; }
 		public VelocityService Velocities { get; private set; }
@@ -39,7 +37,11 @@ namespace ParticlePhysics {
 		public ICollisionDetection Collisions { get; private set; }
 		public MeshCombiner Combiner { get; private set; }
 
+		bool _initialized = false;
+		
 		void Start () {
+			capacity = ShaderUtil.AlignBufferSize(capacity);
+
 			Positions = new PositionService(compute, capacity);
 			Velocities = new VelocityService(compute, capacity);
 			Lifes = new LifeService(compute, capacity);
