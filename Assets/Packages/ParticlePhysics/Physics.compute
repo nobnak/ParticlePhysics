@@ -9,6 +9,7 @@
 #pragma kernel SimulatePosition
 #pragma kernel SimulateLife
 #pragma kernel SolveWallCollision
+#pragma kernel SolvePolygonCollision
 #pragma kernel SolveParticleCollision
 #pragma kernel ClampVelocity
 #pragma kernel CheckBounds
@@ -28,14 +29,13 @@ static const uint DEAD_GRID = 4294967295;
 
 static const float particleMass = 1;
 static const float impulsiveMassCoeff = particleMass / (particleMass + particleMass);
-static const float distanceEpsilon = 0.001;
-static const float penetrationSlop = 0.001;
+static const float distanceEpsilon = 1e-6;
+static const float penetrationSlop = 0.01;
 static const float maxSpeed = 20.0;
 
 float dt;
 float elastics;
 float friction;
-float dragCoeff;
 float particleRadius;
 float broadphaseSqrDistance;
 float penetrationBias;
@@ -44,6 +44,7 @@ int uploadOffset;
 int uploadLength;
 int wallCount;
 int grid_nx, grid_ny;
+int polygonCount;
 float4 gridParams;
 RWStructuredBuffer<float2> VelocitiesCurr;
 RWStructuredBuffer<float2> VelocitiesNext;
@@ -57,6 +58,9 @@ StructuredBuffer<float2> Uploader;
 StructuredBuffer<float> UploaderFloat;
 StructuredBuffer<Wall> Walls;
 StructuredBuffer<uint> BroadphaseKeys;
+StructuredBuffer<float> DragCoeffs;
+StructuredBuffer<Polygon> Polygons;
+StructuredBuffer<Segment> Segments;
 
 
 
@@ -94,10 +98,10 @@ void UploadLife(uint3 id : SV_DispatchThreadID) {
 	Lifes[j] = UploaderFloat[i];
 }
 [numthreads(WARP_SIZE,1,1)]
-void SimulateVelocity(uint3 id : SV_DispatchThreadID) {
+void SimulateVelocity(uint3 id : SV_DispatchThreadID, uint3 tid : SV_GroupThreadID) {
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
 	float2 v = VelocitiesCurr[i];
-	VelocitiesNext[i] = v + dt * G - dt * dragCoeff * length(v) * v;
+	VelocitiesNext[i] = v + dt * G - dt * DragCoeffs[tid.x] * length(v) * v;
 }
 [numthreads(WARP_SIZE,1,1)]
 void SimulatePosition(uint3 id : SV_DispatchThreadID) {
@@ -119,18 +123,71 @@ void SolveWallCollision(uint3 id : SV_DispatchThreadID) {
 	float cpenet = penetrationBias / dt;
 	for (int j = 0; j < wallCount; j++) {
 		Wall wall = Walls[j];
-		float v0n = dot(wall.n, v);
-		float dn = dot(wall.n, x) - wall.dn;
-		float dt = dot(wall.t, x) - wall.dt;
-		if (abs(dn) > (wall.h + particleRadius) || abs(dt) > (wall.w + particleRadius))
+		float2 wall_n = wall.n;
+		float2 wall_t = wall.t;
+		float wall_w = wall.w;
+		float wall_h = wall.h;
+		float dn = dot(wall_n, x) - wall.dn;
+		float dt = dot(wall_t, x) - wall.dt;
+		float dist_n = abs(dn) - wall_h;
+		float dist_t = abs(dt) - wall_w;
+		#if 1
+		if (abs(dist_t) < abs(dist_n)) {
+			float2 tmp2 = wall_n; wall_n = wall_t; wall_t = tmp2;
+			float tmp1 = wall_w; wall_w = wall_h; wall_h = tmp1;
+			tmp1 = dn; dn = dt; dt = tmp1;
+			tmp1 = dist_n; dist_n = dist_t; dist_t = tmp1;
+		}
+		#endif
+		if (dist_n > particleRadius || dist_t > particleRadius)
 			continue;
-		float penet = cpenet * max(0.0, (wall.h + particleRadius - penetrationSlop) - abs(dn));
+		float penet = cpenet * max(0.0, (wall_h + particleRadius - penetrationSlop) - abs(dn));
 		float sign_dn = (dn >= 0.0 ? 1.0 : -1.0);
-		float2 n = sign_dn * wall.n;
+		float2 n = sign_dn * wall_n;
+		float v0n = dot(wall_n, v);
 		float pn = max(0.0, -(1.0 + elastics) * (sign_dn * v0n) + penet);
-		float v0t = dot(wall.t, v);
+		float v0t = dot(wall_t, v);
 		float pt = clamp(-v0t, -friction * pn, friction * pn);
-		p += pn * n + pt * wall.t;
+		p += pn * n + pt * wall_t;
+	}
+	
+	VelocitiesNext[i] = v + p;
+}
+[numthreads(WARP_SIZE,1,1)]
+void SolvePolygonCollision(uint3 id : SV_DispatchThreadID) {
+	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
+	float2 x = Positions[i];
+	float2 v = VelocitiesCurr[i];
+	
+	float2 p = 0;
+	for (int j = 0; j < polygonCount; j++) {
+		Polygon polygon = Polygons[j];
+		float2 distFromPoly = x - polygon.bounds.xy;
+		if (any(abs(distFromPoly) > polygon.bounds.zw))
+			continue;
+		
+		int cn = 0;
+		Segment nearSegment = (Segment)0;
+		float nearDistance = MAX_VALUE;
+		for (int i = 0; i < polygon.segmentCount; i++) {
+			Segment segment = Segments[i + polygon.segmentIndex];
+			float2 v0 = segment.from;
+			float2 v1 = v0 + segment.len * segment.t;
+			if ((v0.y <= x.y && x.y < v1.y) || (v1.y <= x.y && v0.y < x.y)) {
+				float t = (x.y - v0.y) / (v1.y - v0.y);
+				float vx = v0.x + t * (v1.x - v0.x);
+				if (x.x < vx)
+					cn++;
+			}
+			
+			float2 vp = x - v0;
+			float l = dot(vp, segment.t);
+			float d = dot(vp, segment.n);
+			if (abs(d) < nearDistance) {
+				nearDistance = abs(d);
+				nearSegment = segment;
+			}
+		}
 	}
 	
 	VelocitiesNext[i] = v + p;

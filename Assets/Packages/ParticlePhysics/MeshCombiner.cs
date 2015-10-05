@@ -1,5 +1,7 @@
-﻿using UnityEngine;
+﻿#define BENCHMARK
+using UnityEngine;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace ParticlePhysics {
 	public class MeshCombiner : System.IDisposable {
@@ -14,6 +16,7 @@ namespace ParticlePhysics {
 		}
 
 		public void Rebuild(IEnumerable<GameObject> particles) {
+			BeginBenchmark();
 			Release();
 
 			var combined = new List<GameObject>();
@@ -24,6 +27,7 @@ namespace ParticlePhysics {
 				combined.Add(go);
 			}
 			Combined = combined.ToArray();
+			EndBenchmark();
 		}
 		public void SetParent(Transform parent, bool worldPositionStays) {
 			foreach (var go in Combined)
@@ -113,6 +117,20 @@ namespace ParticlePhysics {
 			combined.triangles = triangles;
 			combined.RecalculateBounds();
 			return combined;
+		}
+
+		#if BENCHMARK
+		Stopwatch _benchmaark;
+		#endif
+		[Conditional("BENCHMARK")]
+		void BeginBenchmark() {
+			_benchmaark = Stopwatch.StartNew();
+		}
+		[Conditional("BENCHMARK")]
+		void EndBenchmark() {
+			_benchmaark.Stop();
+			var callerName = new StackFrame(1).GetMethod().Name;
+			UnityEngine.Debug.LogFormat("Benchmark on {0} : {1:f1}msec", callerName, _benchmaark.Elapsed.TotalMilliseconds);
 		}
 
 		#region IDisposable implementation

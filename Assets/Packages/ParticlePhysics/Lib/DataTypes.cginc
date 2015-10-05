@@ -18,6 +18,16 @@ struct Collision {
 	uint colliders[COLLIDER_CAPACITY];
 };
 
-
+struct Polygon {
+	float4 bounds;
+	int segmentIndex;
+	int segmentCount;
+};
+struct Segment {
+	float2 from;
+	float len;
+	float2 n;
+	float2 t;
+};
 
 #endif

@@ -7,6 +7,7 @@ namespace ParticlePhysics {
 		public const int MAX_THREAD_GROUPS = 1024;
 		public const int MAX_X_THREADS = WARP_SIZE * MAX_THREAD_GROUPS;
 		public const int COLLIDER_CAPACITY = 10;
+		public const int MAX_WALL_COUNT = 64;
 
 		public const string KERNEL_UPLOAD_VELOCITY = "UploadVelocity";
 		public const string KERNEL_UPLOAD_POSITION = "UploadPosition";
@@ -15,6 +16,7 @@ namespace ParticlePhysics {
 		public const string KERNEL_SIMULATE_POSITION = "SimulatePosition";
 		public const string KERNEL_SIMULATE_LIFE = "SimulateLife";
 		public const string KERNEL_SOLVE_WALL_COLLISION = "SolveWallCollision";
+		public const string KERNEL_SOLVE_POLYGON_COLLISION = "SolvePolygonCollision";
 		public const string KERNEL_SOLVE_PARTICLE_COLLISION = "SolveParticleCollision";
 		public const string KERNEL_CLAMP_VELOCITY = "ClampVelocity";
 		public const string KERNEL_CHECK_BOUNDS = "CheckBounds";
@@ -37,6 +39,7 @@ namespace ParticlePhysics {
 		public const string PROP_HASH_GRID_NX = "grid_nx";
 		public const string PROP_HASH_GRID_NY = "grid_ny";
 		public const string PROP_HASH_GRID_PARAMS = "gridParams"; // grid_w, grid_h, grid_dxdw, grid_dydh;
+		public const string PROP_POLYGON_COUNT = "polygonCount";
 
 		public const string BUF_VELOCITY_CURR = "VelocitiesCurr";
 		public const string BUF_VELOCITY_NEXT = "VelocitiesNext";
@@ -50,5 +53,8 @@ namespace ParticlePhysics {
 		public const string BUF_GRID_END = "GridEnds";
 		public const string BUF_COLLISIONS = "Collisions";
 		public const string BUF_BROADPHASE_KEYS = "BroadphaseKeys";
+		public const string BUF_DRAG_COEFFS = "DragCoeffs";
+		public const string BUF_POLYGONS = "Polygons";
+		public const string BUF_SEGMENTS = "Segments";
 	}
 }

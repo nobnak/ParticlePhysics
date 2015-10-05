@@ -4,16 +4,20 @@ using System.Text;
 
 namespace ParticlePhysics {
 	public class PhysicsEngine : MonoBehaviour {
-		
 		public const string PROP_ID = "_Id";
-		
-		public int header = 0;
+
+		// Params
+		public bool particleCollisionEnabled = false;
 		public int capacity = 1024;
+		public ConstantService.ConstantData constants;
+
+		public int header = 0;
 		public ComputeShader compute;
 		public ComputeShader computeSort;
 		public Transform[] wallColliders;
-		public ConstantService.ConstantData constants;
-		
+		public PolygonCollider[] polygonColliders;
+
+		public Camera targetCamera;
 		public GameObject containerfab;
 		public GameObject[] particlefabs;
 
@@ -24,38 +28,41 @@ namespace ParticlePhysics {
 		public VelocityService Velocities { get; private set; }
 		public LifeService Lifes { get; private set; }
 		public WallService Walls { get; private set; }
+		public PolygonColliderService Polygons { get; private set; }
 		public ConstantService Constants { get; private set; }
 		public VelocitySimulation VelSimulation { get; private set; }
 		public PositionSimulation PosSimulation { get; private set; }
 		public WallCollisionSolver WallSolver { get; private set; }
+		public PolygonCollisionSolver PolygonSolver { get; private set; }
 		public ParticleCollisionSolver ParticleSolver { get; private set; }
 		public BoundsChecker BoundsChecker { get; private set; }
 		public ICollisionDetection Collisions { get; private set; }
 		public MeshCombiner Combiner { get; private set; }
 
-		void Awake() {
-
-		}
 		void Start () {
 			Positions = new PositionService(compute, capacity);
 			Velocities = new VelocityService(compute, capacity);
 			Lifes = new LifeService(compute, capacity);
 			Constants = new ConstantService(constants);
-			VelSimulation = new VelocitySimulation(compute, Velocities);
+			VelSimulation = new VelocitySimulation(compute, Velocities, Constants);
 			PosSimulation = new PositionSimulation(compute, Velocities, Positions);
 			Collisions = new HashGrid(compute, computeSort, Lifes, Positions, GenerateGrid());
 			ParticleSolver = new ParticleCollisionSolver(compute, Velocities, Positions, Lifes, Collisions);
 			BoundsChecker = new BoundsChecker(compute, Lifes, Positions);
-			Walls = BuildWalls(wallColliders);
+			Walls = new WallService(ShaderConst.MAX_WALL_COUNT);
 			WallSolver = new WallCollisionSolver(compute, Velocities, Positions, Walls);
+			Polygons = new PolygonColliderService();
+			PolygonSolver = new PolygonCollisionSolver(compute, Velocities, Positions, Polygons);
 			
 			var particles = new GameObject[capacity];
 			foreach (var pfab in particlefabs)
 				pfab.transform.localScale = 2f * constants.radius * Vector3.one;
+			Profiler.BeginSample("Instantiate Particles");
 			for (var i = 0; i < capacity; i++) {
 				var pfab = particlefabs[Random.Range(0, particlefabs.Length)];
 				particles[i] = (GameObject)Instantiate(pfab, Vector3.zero, Random.rotationUniform);
 			}
+			Profiler.EndSample();
 			Combiner = new MeshCombiner(containerfab);
 			Combiner.Rebuild(particles);
 			Combiner.SetParent(transform, false);
@@ -63,6 +70,7 @@ namespace ParticlePhysics {
 				Destroy(particles[i]);
 			
 			UpdateConstantData();
+			PresetWalls ();
 			_initialized = true;
 		}
 		void OnDestroy() {
@@ -76,6 +84,8 @@ namespace ParticlePhysics {
 				Constants.Dispose();
 			if (Walls != null)
 				Walls.Dispose();
+			if (Polygons != null)
+				Polygons.Dispose();
 			if (VelSimulation != null)
 				VelSimulation.Dispose();
 			if (PosSimulation != null)
@@ -84,6 +94,8 @@ namespace ParticlePhysics {
 				Collisions.Dispose();
 			if (WallSolver != null)
 				WallSolver.Dispose();
+			if (PolygonSolver != null)
+				PolygonSolver.Dispose();
 			if (ParticleSolver != null)
 				ParticleSolver.Dispose();
 			if (Combiner != null)
@@ -95,14 +107,18 @@ namespace ParticlePhysics {
 			Positions.SetGlobal();
 			Lifes.SetGlobal();
 			Collisions.SetGlobal ();
+			Polygons.UpdatePolygons(polygonColliders);
 		}
 		void FixedUpdate() {
-			Constants.SetConstants(compute, Time.fixedDeltaTime);
+			Constants.SetConstants(compute, constants.FixedDeltaTime);
 			VelSimulation.Simulate();
-			Collisions.Detect(2f * constants.radius);
+			if (particleCollisionEnabled)
+				Collisions.Detect(2f * constants.radius);
 			for(var i = 0; i < 10; i++) {
 				WallSolver.Solve();
-				ParticleSolver.Solve();
+				PolygonSolver.Solve();
+				if (particleCollisionEnabled)
+					ParticleSolver.Solve();
 				Velocities.ClampMagnitude();
 			}
 			PosSimulation.Simulate();
@@ -120,25 +136,24 @@ namespace ParticlePhysics {
 			header = (header + positions.Length) % capacity;
 		}
 		public GridService.Grid GenerateGrid() {
-			var h = 2f * Camera.main.orthographicSize;
-			var w = h * Camera.main.aspect;
+			var h = 2f * targetCamera.orthographicSize;
+			var w = h * targetCamera.aspect;
 			var diam = 2f * constants.radius;
 			var nx = Mathf.FloorToInt(w / diam);
 			var ny = Mathf.FloorToInt (h / diam);
 			return new GridService.Grid(){ nx = nx, ny = ny, w = w, h = h };
 		}
 		void UpdateConstantData() {
-			var center = (Vector2)Camera.main.transform.position;
-			var h = 2f * Camera.main.orthographicSize;
-			var w = Camera.main.aspect * h;
+			var center = (Vector2)targetCamera.transform.position;
+			var h = 2f * targetCamera.orthographicSize;
+			var w = targetCamera.aspect * h;
 			constants.bounds = new Vector4(center.x - w, center.y - h, center.x + w, center.y + h);
 		}
 
-		static WallService BuildWalls(Transform[] wallColliders) {
-			var walls = new WallService (wallColliders.Length);
+		public void PresetWalls() {
+			Walls.Clear();
 			foreach (var collider in wallColliders)
-				walls.Add (collider);
-			return walls;
+				Walls.Add(collider);
 		}
 	}
 }

@@ -20,9 +20,8 @@ namespace ParticlePhysics {
 			Walls = new ComputeBuffer(capacity, Marshal.SizeOf(typeof(Wall)));
 			Walls.SetData(_walls);
 		}
-		public void Add(Transform collider) {
-			_colliders.Add(collider);
-		}
+		public void Add(Transform collider) { _colliders.Add(collider); }
+		public void Clear() { _colliders.Clear(); }
 		public void Update() {
 			for (var i = 0; i < _colliders.Count; i++)
 				_walls[i] = Convert(_colliders[i]);
