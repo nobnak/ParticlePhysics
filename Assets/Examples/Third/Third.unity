@@ -145,7 +145,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 60
+  orthographic size: 10
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -226,8 +226,8 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 186484737}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 56.5099983, z: 0}
-  m_LocalScale: {x: 15, y: 5, z: 1}
+  m_LocalPosition: {x: 0, y: 10.9899998, z: 0}
+  m_LocalScale: {x: 30, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1482494399}
   m_RootOrder: 0
@@ -254,9 +254,9 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 347302803}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.80000019, y: 33.2000008, z: 0}
-  m_LocalScale: {x: 3, y: .5, z: 1}
+  m_LocalRotation: {x: 0, y: 0, z: .437492579, w: .899222076}
+  m_LocalPosition: {x: 10.0100002, y: 5.17999983, z: 0}
+  m_LocalScale: {x: 5, y: .5, z: 1}
   m_Children: []
   m_Father: {fileID: 1101846235}
   m_RootOrder: 4
@@ -315,8 +315,8 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1017335072}
   m_LocalRotation: {x: 0, y: 0, z: .406736344, w: -.913545609}
-  m_LocalPosition: {x: -2.9000001, y: 24.2999992, z: 0}
-  m_LocalScale: {x: 3, y: .5, z: 1}
+  m_LocalPosition: {x: -6.86999989, y: -7.01999998, z: 0}
+  m_LocalScale: {x: 5, y: .5, z: 1}
   m_Children: []
   m_Father: {fileID: 1101846235}
   m_RootOrder: 2
@@ -374,9 +374,9 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1057544111}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: .899999976, y: -41.4000015, z: 0}
-  m_LocalScale: {x: 3, y: .5, z: 1}
+  m_LocalRotation: {x: 0, y: 0, z: .160656542, w: .98701036}
+  m_LocalPosition: {x: -11.5200005, y: 4.23000002, z: 0}
+  m_LocalScale: {x: 5, y: .5, z: 1}
   m_Children: []
   m_Father: {fileID: 1101846235}
   m_RootOrder: 1
@@ -494,9 +494,9 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1598409611}
-  m_LocalRotation: {x: 0, y: 0, z: .25738582, w: .966308713}
-  m_LocalPosition: {x: 3.4000001, y: 6.0999999, z: 0}
-  m_LocalScale: {x: 3, y: .5, z: 1}
+  m_LocalRotation: {x: 0, y: 0, z: .258819073, w: .965925813}
+  m_LocalPosition: {x: -.239999995, y: 1.41999996, z: 0}
+  m_LocalScale: {x: 5, y: .5, z: 1}
   m_Children: []
   m_Father: {fileID: 1101846235}
   m_RootOrder: 3
@@ -559,17 +559,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9a0dc64a91f2c34183d5392e35e49e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  keyAdd: 97
-  keyReadLifes: 108
-  keyReadVelocities: 118
-  keyReadPositions: 112
-  keyReadWalls: 119
+  fall: 1
+  particleGenerationSpeed: 3000
+  angularSpeedRange: {x: 0, y: 1}
   physics: {fileID: 1889913063}
+  computeRotation: {fileID: 7200000, guid: f2f0bfdb12c00b64e856af6ef0e5f742, type: 3}
   emitters:
   - {fileID: 186484740}
-  particleGenerationSpeed: 3000
-  computeRotation: {fileID: 7200000, guid: f2f0bfdb12c00b64e856af6ef0e5f742, type: 3}
-  angularSpeedRange: {x: 0, y: 1}
 --- !u!4 &1889913062
 Transform:
   m_ObjectHideFlags: 0
@@ -593,8 +589,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 868a6d818cc7a4943bc61230e62e01ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  header: 0
+  particleCollisionEnabled: 0
   capacity: 32768
+  constants:
+    timeScale: 1
+    elastics: .100000001
+    friction: .5
+    dragCoeff: .0199999996
+    dragCoeffDeviation: .100000001
+    radius: .0500000007
+    penetrationBias: .100000001
+    bounds: {x: -100, y: -100, z: 100, w: 100}
+  header: 0
   compute: {fileID: 7200000, guid: 8ea81e5b29837604d8fa5917d2f32580, type: 3}
   computeSort: {fileID: 7200000, guid: 5571ac2ec9cc23e498e329945fdfa8e9, type: 3}
   wallColliders:
@@ -603,13 +609,8 @@ MonoBehaviour:
   - {fileID: 1017335073}
   - {fileID: 1598409612}
   - {fileID: 347302804}
-  constants:
-    elastics: .100000001
-    friction: .5
-    dragCoeff: .0199999996
-    radius: .0500000007
-    penetrationBias: .100000001
-    bounds: {x: -100, y: -100, z: 100, w: 100}
+  polygonColliders: []
+  targetCamera: {fileID: 136174181}
   containerfab: {fileID: 194522, guid: 0b323baab75d02a47ae2941a533e285d, type: 2}
   particlefabs:
   - {fileID: 194522, guid: c6a9e382a363a8c45b1147045502f58c, type: 2}
@@ -667,9 +668,9 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2052295429}
-  m_LocalRotation: {x: 0, y: 0, z: .441583931, w: -.897219956}
-  m_LocalPosition: {x: -3.9000001, y: -27.2999992, z: 0}
-  m_LocalScale: {x: 3, y: .5, z: 1}
+  m_LocalRotation: {x: 0, y: 0, z: -.258819073, w: .965925813}
+  m_LocalPosition: {x: 6.13000011, y: -6.30000019, z: 0}
+  m_LocalScale: {x: 5, y: .5, z: 1}
   m_Children: []
   m_Father: {fileID: 1101846235}
   m_RootOrder: 0

@@ -13,7 +13,9 @@ public class Second : MonoBehaviour {
 	public KeyCode keyAdd;
 	public KeyCode keyReadVelocities;
 	public KeyCode keyReadPositions;
+	public ConstantService.ConstantData constantData;
 
+	ConstantService _constants;
 	PositionService _positions;
 	VelocityService _velocities;
 	LifeService _lifes;
@@ -21,13 +23,16 @@ public class Second : MonoBehaviour {
 	PositionSimulation _posSimulation;
 
 	void Start () {
+		_constants = new ConstantService(constantData);
 		_positions = new PositionService(compute, capacity);
 		_velocities = new VelocityService(compute, capacity);
 		_lifes = new LifeService(compute, capacity);
-		_velSimulation = new VelocitySimulation(compute, _velocities);
+		_velSimulation = new VelocitySimulation(compute, _velocities, _constants);
 		_posSimulation = new PositionSimulation(compute, _velocities, _positions);
 	}
 	void OnDestroy() {
+		if (_constants != null)
+			_constants.Dispose();
 		if (_positions != null)
 			_positions.Dispose();
 		if (_velocities != null)
@@ -66,7 +71,7 @@ public class Second : MonoBehaviour {
 			Debug.Log(buf);
 		}
 
-		compute.SetFloat(ShaderConst.PROP_DELTA_TIME, Time.deltaTime);
+		_constants.SetConstants(compute, Time.deltaTime);
 		_velSimulation.Simulate();
 		_posSimulation.Simulate();
 		_lifes.Simulate();
