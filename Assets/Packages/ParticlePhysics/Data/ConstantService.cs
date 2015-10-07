@@ -10,10 +10,10 @@ namespace ParticlePhysics {
 		float[] _dragCoeffData;
 		ComputeBuffer _dragCoeffs;
 
-		public ConstantService(ConstantData d) {
+		public ConstantService(int capacity, ConstantData d) {
 			_data = d;
-			_dragCoeffData = new float[ShaderConst.WARP_SIZE];
-			_dragCoeffs = new ComputeBuffer (ShaderConst.WARP_SIZE, Marshal.SizeOf (typeof(float)));
+			_dragCoeffData = new float[capacity];
+			_dragCoeffs = new ComputeBuffer (capacity, Marshal.SizeOf (typeof(float)));
 			CheckDragCoeffs();
 		}
 
