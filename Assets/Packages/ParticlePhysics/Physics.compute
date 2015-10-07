@@ -98,10 +98,10 @@ void UploadLife(uint3 id : SV_DispatchThreadID) {
 	Lifes[j] = UploaderFloat[i];
 }
 [numthreads(WARP_SIZE,1,1)]
-void SimulateVelocity(uint3 id : SV_DispatchThreadID, uint3 tid : SV_GroupThreadID) {
+void SimulateVelocity(uint3 id : SV_DispatchThreadID) {
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
 	float2 v = VelocitiesCurr[i];
-	VelocitiesNext[i] = v + dt * G - dt * DragCoeffs[tid.x] * length(v) * v;
+	VelocitiesNext[i] = v + dt * G - dt * DragCoeffs[i] * length(v) * v;
 }
 [numthreads(WARP_SIZE,1,1)]
 void SimulatePosition(uint3 id : SV_DispatchThreadID) {
