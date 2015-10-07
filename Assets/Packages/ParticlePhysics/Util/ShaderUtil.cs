@@ -19,5 +19,12 @@ namespace ParticlePhysics {
 		public static int AlignBufferSize(int length) {
 			return ((length - 1) / ShaderConst.WARP_SIZE + 1) * ShaderConst.WARP_SIZE;
 		}
+		public static int PowerOfTwo(int length) {
+			length--;
+			var count = 0;
+			for (; length > 0; count++)
+				length >>= 1;
+			return 1 << count;
+		}
 	}
 }
