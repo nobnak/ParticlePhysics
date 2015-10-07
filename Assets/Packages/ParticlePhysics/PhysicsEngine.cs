@@ -40,12 +40,12 @@ namespace ParticlePhysics {
 		bool _initialized = false;
 		
 		void Start () {
-			capacity = ShaderUtil.AlignBufferSize(capacity);
+			capacity = ShaderUtil.PowerOfTwo(capacity);
 
 			Positions = new PositionService(compute, capacity);
 			Velocities = new VelocityService(compute, capacity);
 			Lifes = new LifeService(compute, capacity);
-			Constants = new ConstantService(constants);
+			Constants = new ConstantService(capacity, constants);
 			VelSimulation = new VelocitySimulation(compute, Velocities, Constants);
 			PosSimulation = new PositionSimulation(compute, Velocities, Positions);
 			Collisions = new HashGrid(compute, computeSort, Lifes, Positions, GenerateGrid());
