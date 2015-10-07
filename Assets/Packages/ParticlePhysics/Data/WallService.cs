@@ -41,8 +41,8 @@ namespace ParticlePhysics {
 			var n = ((Vector2)collider.up).normalized;
 			var t = ((Vector2)collider.right).normalized;
 			var p = (Vector2)collider.position;
-			var w = collider.localScale.x * 0.5f;
-			var h = collider.localScale.y * 0.5f;
+			var w = collider.lossyScale.x * 0.5f;
+			var h = collider.lossyScale.y * 0.5f;
 			return new WallService.Wall () {
 				n = n, t = t, dn = Vector2.Dot (n, p), dt = Vector2.Dot (t, p), w = w, h = h
 			};
