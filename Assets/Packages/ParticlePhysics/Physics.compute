@@ -160,33 +160,43 @@ void SolvePolygonCollision(uint3 id : SV_DispatchThreadID) {
 	float2 v = VelocitiesCurr[i];
 	
 	float2 p = 0;
+	
 	for (int j = 0; j < polygonCount; j++) {
 		Polygon polygon = Polygons[j];
-		float2 distFromPoly = x - polygon.bounds.xy;
-		if (any(abs(distFromPoly) > polygon.bounds.zw))
-			continue;
 		
-		int cn = 0;
+		float2 distFromPoly = abs(x - polygon.bounds.xy);
+		if (any(distFromPoly > polygon.bounds.zw))
+			continue;
+			
+		uint cn = 0;
 		Segment nearSegment = (Segment)0;
 		float nearDistance = MAX_VALUE;
 		for (int i = 0; i < polygon.segmentCount; i++) {
 			Segment segment = Segments[i + polygon.segmentIndex];
-			float2 v0 = segment.from;
-			float2 v1 = v0 + segment.len * segment.t;
-			if ((v0.y <= x.y && x.y < v1.y) || (v1.y <= x.y && v0.y < x.y)) {
-				float t = (x.y - v0.y) / (v1.y - v0.y);
-				float vx = v0.x + t * (v1.x - v0.x);
-				if (x.x < vx)
+			float2 x0 = segment.from;
+			float2 x1 = x0 + segment.len * segment.t;
+			if ((x0.y <= x.y && x.y < x1.y) || (x1.y <= x.y && x.y < x0.y)) {
+				float t = (x.y - x0.y) / (x1.y - x0.y);
+				float xt = x0.x + t * (x1.x - x0.x);
+				if (x.x < xt)
 					cn++;
 			}
 			
-			float2 vp = x - v0;
-			float l = dot(vp, segment.t);
-			float d = dot(vp, segment.n);
-			if (abs(d) < nearDistance) {
+			float2 xp = x - x0;
+			float l = dot(xp, segment.t);
+			float d = dot(xp, segment.n);
+			if (0 < l && l < segment.len && abs(d) < nearDistance) {
 				nearDistance = abs(d);
 				nearSegment = segment;
 			}
+		}
+		
+		if ((cn % 2) == 1 && nearDistance < MAX_VALUE) {
+			float v0n = dot(v, nearSegment.n);
+			float v0t = dot(v, nearSegment.t);
+			float pn = max(-(1.0 + elastics) * v0n, 0.0);
+			float pt = clamp(-v0t, -friction * pn, friction * pn);
+			p += pn * nearSegment.n + pt * nearSegment.t;
 		}
 	}
 	

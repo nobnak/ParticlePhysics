@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace ParticlePhysics {
 	public class PolygonColliderService : System.IDisposable {
@@ -17,24 +18,24 @@ namespace ParticlePhysics {
 		public Segment[] Segments { get { return _segmentData; } }
 
 		public PolygonColliderService() {
-			Init(DEFAULT_POLYGON_COUNT, DEFAULT_SEGMENT_COUNT);
+			Init(0, DEFAULT_POLYGON_COUNT, DEFAULT_SEGMENT_COUNT);
 		}
 
 		public void UpdatePolygons(PolygonCollider[] colliders) {
-			for (var i = 0; i < colliders.Length; i++)
+			_nPolygons = colliders.Length;
+			for (var i = 0; i < _nPolygons; i++)
 				colliders[i].ManualUpdate();
 
-			_nPolygons = colliders.Length;
 			var nSegments = 0;
-			for (var i = 0; i < colliders.Length; i++)
+			for (var i = 0; i < _nPolygons; i++)
 				nSegments += colliders[i].Segments.Length;
 			if (_Polygons.count < _nPolygons || _Segments.count < nSegments) {
 				Release();
-				Init (_nPolygons, nSegments);
+				Init (_nPolygons, _nPolygons, nSegments);
 			}
 
 			var segmentIndex = 0;
-			for (var i = 0; i < colliders.Length; i++) {
+			for (var i = 0; i < _nPolygons; i++) {
 				var c = colliders[i];
 				var segments = c.Segments;
 				_polygonData[i] = Polygon.Generate(c.BoundingBox, segmentIndex, segments.Length);
@@ -58,13 +59,15 @@ namespace ParticlePhysics {
 		}
 
 		void Release() {
+			_nPolygons = 0;
 			if (_Polygons != null)
 				_Polygons.Release();
 			if (_Segments != null)
 				_Segments.Release();
 		}
 
-		void Init (int polygonCapacity, int segmentsCapacity) {
+		void Init (int polygonCount, int polygonCapacity, int segmentsCapacity) {
+			_nPolygons = PolygonCount;
 			_polygonData = new Polygon[polygonCapacity];
 			_Polygons = new ComputeBuffer (polygonCapacity, Marshal.SizeOf (typeof(Polygon)));
 			_segmentData = new Segment[segmentsCapacity];

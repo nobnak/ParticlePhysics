@@ -27,7 +27,7 @@ namespace ParticlePhysics {
 			slogger.Append("Segments : ");
 			var polygons = _service.Polygons;
 			var segments = _service.Segments;
-			for (var i = 0; i < _service.PolygonCount; i++) {
+			for (var i = 0; i < _service.Polygons.Length; i++) {
 				var p = polygons[i];
 				plogger.Append(p);
 				for (var j = 0; j < p.segmentCount; j++) {
