@@ -59,7 +59,6 @@ namespace ParticlePhysics {
 		}
 
 		void Release() {
-			_nPolygons = 0;
 			if (_Polygons != null)
 				_Polygons.Release();
 			if (_Segments != null)
@@ -67,7 +66,10 @@ namespace ParticlePhysics {
 		}
 
 		void Init (int polygonCount, int polygonCapacity, int segmentsCapacity) {
-			_nPolygons = PolygonCount;
+			polygonCapacity = Mathf.Max(polygonCapacity, DEFAULT_POLYGON_COUNT);
+			segmentsCapacity = Mathf.Max(segmentsCapacity, DEFAULT_SEGMENT_COUNT);
+
+			_nPolygons = polygonCount;
 			_polygonData = new Polygon[polygonCapacity];
 			_Polygons = new ComputeBuffer (polygonCapacity, Marshal.SizeOf (typeof(Polygon)));
 			_segmentData = new Segment[segmentsCapacity];

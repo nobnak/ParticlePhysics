@@ -291,6 +291,49 @@ MeshFilter:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 347302803}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &415644941
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 415644943}
+  - 114: {fileID: 415644942}
+  m_Layer: 0
+  m_Name: Polygon 1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &415644942
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 415644941}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c6a64c31396e1b4fba22eab7fa7c7cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  vertices:
+  - {x: 2.0585947, y: -.231966615}
+  - {x: -3.08011484, y: -.109711051}
+  - {x: -.444903851, y: 4.09595013}
+--- !u!4 &415644943
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 415644941}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.32000017, y: .159999996, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 698434670}
+  m_RootOrder: 1
 --- !u!1 &698434669
 GameObject:
   m_ObjectHideFlags: 0
@@ -317,6 +360,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1346226417}
+  - {fileID: 415644943}
   m_Father: {fileID: 0}
   m_RootOrder: 5
 --- !u!1 &1017335072
@@ -499,13 +543,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   vertices:
-  - {x: -1.82823086, y: -.747004271}
-  - {x: -3, y: 2}
-  - {x: -.324584544, y: 3.63274288}
-  - {x: 3.73699093, y: 2.92437363}
-  - {x: 2.29427528, y: -1.39946699}
-  - {x: 1.13554657, y: -.381956339}
-  - {x: -.392279387, y: -.154847383}
+  - {x: 2.0585947, y: -.231966615}
+  - {x: -3.08011532, y: -.109711051}
+  - {x: -.444904327, y: 4.0959506}
 --- !u!4 &1346226417
 Transform:
   m_ObjectHideFlags: 0
@@ -513,7 +553,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1346226415}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -5.28999996, y: .129999995, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 698434670}
@@ -686,6 +726,7 @@ MonoBehaviour:
   - {fileID: 347302804}
   polygonColliders:
   - {fileID: 1346226416}
+  - {fileID: 415644942}
   targetCamera: {fileID: 136174181}
   containerfab: {fileID: 194522, guid: 0b323baab75d02a47ae2941a533e285d, type: 2}
   particlefabs:

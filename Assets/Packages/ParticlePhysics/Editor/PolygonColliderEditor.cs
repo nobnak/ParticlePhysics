@@ -26,21 +26,6 @@ namespace ParticlePhysics {
 				vertices[i] = _polygon.transform.InverseTransformPoint(worldPos);
 			}
 
-			Handles.BeginGUI();
-			GUILayout.BeginArea(new Rect(10f, 10f, 100f, 100f));
-			GUILayout.BeginVertical();
-			if (GUILayout.Button("Add")) {
-				System.Array.Resize(ref vertices, vertices.Length + 1);
-				_polygon.vertices = vertices;
-			}
-			if (GUILayout.Button("Remove") && vertices.Length > 0) {
-				System.Array.Resize(ref vertices, vertices.Length - 1);
-				_polygon.vertices = vertices;
-			}
-			GUILayout.EndVertical();
-			GUILayout.EndArea();
-			Handles.EndGUI();
-			
 			if (EditorGUI.EndChangeCheck())
 				EditorUtility.SetDirty(_polygon);
 		}
