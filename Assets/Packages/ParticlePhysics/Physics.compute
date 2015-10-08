@@ -182,7 +182,7 @@ void SolvePolygonCollision(uint3 id : SV_DispatchThreadID) {
 				Segment next = Segments[(i + 1) % segmentCount + polygon.segmentIndex];
 				float2 xp = x - segment.from;
 				float2 n = normalize(segment.n + next.n);
-				float d = length(xp);
+				float d = sign(dot(xp, n)) * length(xp);
 				float dabs = abs(d);
 				if (dabs < nearDAbs) {
 					nearD = d;
