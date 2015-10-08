@@ -165,33 +165,47 @@ void SolvePolygonCollision(uint3 id : SV_DispatchThreadID) {
 		Polygon polygon = Polygons[j];
 		
 		float2 distFromPoly = abs(x - polygon.bounds.xy);
-		if (any(distFromPoly > polygon.bounds.zw))
+		if (any(distFromPoly > (polygon.bounds.zw + particleRadius)))
 			continue;
 			
-		uint cn = 0;
+		float nearD = MAX_VALUE;
+		float nearDAbs = MAX_VALUE;
 		Segment nearSegment = (Segment)0;
-		float nearDistance = MAX_VALUE;
-		for (int i = 0; i < polygon.segmentCount; i++) {
+		uint segmentCount = (uint)polygon.segmentCount;
+		for (uint i = 0; i < segmentCount; i++) {
 			Segment segment = Segments[i + polygon.segmentIndex];
-			float2 x0 = segment.from;
-			float2 x1 = x0 + segment.len * segment.t;
-			if ((x0.y <= x.y && x.y < x1.y) || (x1.y <= x.y && x.y < x0.y)) {
-				float t = (x.y - x0.y) / (x1.y - x0.y);
-				float xt = x0.x + t * (x1.x - x0.x);
-				if (x.x < xt)
-					cn++;
-			}
-			
-			float2 xp = x - x0;
+			float2 xp = x - segment.from;
 			float l = dot(xp, segment.t);
-			float d = dot(xp, segment.n);
-			if (0 < l && l < segment.len && abs(d) < nearDistance) {
-				nearDistance = abs(d);
-				nearSegment = segment;
+			
+			if (0 < l && l < segment.len) {
+				float d = dot(xp, segment.n);
+				float dabs = abs(d);
+				if (dabs < nearDAbs) {
+					nearD = d;
+					nearDAbs = dabs;
+					nearSegment = segment;
+				}
+			}
+		}
+		for (i = 0; i < segmentCount; i++) {
+			Segment segment = Segments[i + polygon.segmentIndex];
+			Segment next = Segments[(i + 1) % segmentCount + polygon.segmentIndex];
+			float2 xp = x - segment.from;
+			float2 n = normalize(segment.n + next.n);
+			float d = dot(xp, n);
+			float dabs = abs(d);
+			if (dabs < nearDAbs) {
+				nearD = d;
+				nearDAbs = dabs;
+				float2 t = float2(n.y, -n.x);
+				nearSegment.from = segment.from;
+				nearSegment.len = 0;
+				nearSegment.n = n;
+				nearSegment.t = t;
 			}
 		}
 		
-		if ((cn % 2) == 1 && nearDistance < MAX_VALUE) {
+		if (nearDAbs < MAX_VALUE && nearD < particleRadius) {
 			float v0n = dot(v, nearSegment.n);
 			float v0t = dot(v, nearSegment.t);
 			float pn = max(-(1.0 + elastics) * v0n, 0.0);
