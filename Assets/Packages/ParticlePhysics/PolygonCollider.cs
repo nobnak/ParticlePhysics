@@ -19,12 +19,21 @@ namespace ParticlePhysics {
 			if (!_effective)
 				return;
 
+
 			Gizmos.color = Color.cyan;
 			Gizmos.DrawWireCube(_bounds.center, _bounds.size);
-			Gizmos.color = Color.red;
+			Gizmos.color = Color.white;
 			for (var i = 0; i < _segments.Length; i++) {
 				var s = _segments[i];
-				Gizmos.DrawRay(s.from, s.length * s.t);
+				if (s.Validate()) {
+					Gizmos.DrawRay(s.from, s.length * s.t);
+				} else {
+					Gizmos.color = Color.red;
+					#if UNITY_EDITOR
+					var size = UnityEditor.HandleUtility.GetHandleSize(s.from);
+					Gizmos.DrawSphere(s.from, 0.2f * size);
+					#endif
+				}
 			}
 			Gizmos.color = Color.green;
 			for (var i = 0; i < _segments.Length; i++) {
@@ -50,8 +59,7 @@ namespace ParticlePhysics {
 			InitBoundary(from);
 			for (var i = 0; i < vertices.Length; i++) {
 				var to = transform.TransformPoint (vertices [i]);
-				if (!PolygonColliderService.Segment.Generate (from, to, out _segments[i]))
-					return;
+				_segments[i] = PolygonColliderService.Segment.Generate (from, to);
 				ExpandBoundary(to);
 				from = to;
 			}

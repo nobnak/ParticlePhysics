@@ -113,19 +113,17 @@ namespace ParticlePhysics {
 			public Segment(Vector2 from, float length, Vector2 n, Vector2 t) {
 				this.from = from; this.length = length; this.n = n; this.t = t;
 			}
+
+			public bool Validate() {
+				return length > float.Epsilon;
+			}
 			
-			public static bool Generate(Vector2 from, Vector2 to, out Segment segment) {
+			public static Segment Generate(Vector2 from, Vector2 to) {
 				var dir = to - from;
 				var length = dir.magnitude;
 				var t = dir.normalized;
 				var n = new Vector2(-t.y, t.x);
-				if (length <= float.Epsilon) {
-					Debug.LogErrorFormat("Length is zero : {0}", dir);
-					segment = default(Segment);
-					return false;
-				}
-				segment = new Segment(from, length, n, t);
-				return true;
+				return new Segment(from, length, n, t);
 			}
 
 			public override string ToString () {
