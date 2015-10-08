@@ -158,7 +158,8 @@ void SolvePolygonCollision(uint3 id : SV_DispatchThreadID) {
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
 	float2 x = Positions[i];
 	float2 v = VelocitiesCurr[i];
-	
+	float cpenet = penetrationBias / dt;	
+
 	float2 p = 0;
 	
 	for (int j = 0; j < polygonCount; j++) {
@@ -177,7 +178,22 @@ void SolvePolygonCollision(uint3 id : SV_DispatchThreadID) {
 			float2 xp = x - segment.from;
 			float l = dot(xp, segment.t);
 			
-			if (0 < l && l < segment.len) {
+			if (l < 0) {
+				Segment next = Segments[(i + 1) % segmentCount + polygon.segmentIndex];
+				float2 xp = x - segment.from;
+				float2 n = normalize(segment.n + next.n);
+				float d = length(xp);
+				float dabs = abs(d);
+				if (dabs < nearDAbs) {
+					nearD = d;
+					nearDAbs = dabs;
+					float2 t = float2(n.y, -n.x);
+					nearSegment.from = segment.from;
+					nearSegment.len = 0;
+					nearSegment.n = n;
+					nearSegment.t = t;
+				}
+			} else if (l < segment.len) {
 				float d = dot(xp, segment.n);
 				float dabs = abs(d);
 				if (dabs < nearDAbs) {
@@ -187,28 +203,12 @@ void SolvePolygonCollision(uint3 id : SV_DispatchThreadID) {
 				}
 			}
 		}
-		for (i = 0; i < segmentCount; i++) {
-			Segment segment = Segments[i + polygon.segmentIndex];
-			Segment next = Segments[(i + 1) % segmentCount + polygon.segmentIndex];
-			float2 xp = x - segment.from;
-			float2 n = normalize(segment.n + next.n);
-			float d = dot(xp, n);
-			float dabs = abs(d);
-			if (dabs < nearDAbs) {
-				nearD = d;
-				nearDAbs = dabs;
-				float2 t = float2(n.y, -n.x);
-				nearSegment.from = segment.from;
-				nearSegment.len = 0;
-				nearSegment.n = n;
-				nearSegment.t = t;
-			}
-		}
 		
 		if (nearDAbs < MAX_VALUE && nearD < particleRadius) {
 			float v0n = dot(v, nearSegment.n);
 			float v0t = dot(v, nearSegment.t);
-			float pn = max(-(1.0 + elastics) * v0n, 0.0);
+			float penet = cpenet * max(0.0, particleRadius - nearD);
+			float pn = max(-(1.0 + elastics) * v0n + penet, 0.0);
 			float pt = clamp(-v0t, -friction * pn, friction * pn);
 			p += pn * nearSegment.n + pt * nearSegment.t;
 		}
