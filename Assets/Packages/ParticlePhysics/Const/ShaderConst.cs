@@ -6,7 +6,7 @@ namespace ParticlePhysics {
 		public const int WARP_SIZE = 64;
 		public const int MAX_THREAD_GROUPS = 1024;
 		public const int MAX_X_THREADS = WARP_SIZE * MAX_THREAD_GROUPS;
-		public const int COLLIDER_CAPACITY = 10;
+		public const int COLLIDER_CAPACITY = 9 * 4;
 		public const int MAX_WALL_COUNT = 64;
 
 		public const string KERNEL_UPLOAD_VELOCITY = "UploadVelocity";

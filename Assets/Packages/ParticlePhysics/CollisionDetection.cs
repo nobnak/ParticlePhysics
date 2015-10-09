@@ -60,7 +60,8 @@ namespace ParticlePhysics {
 			_grid.SetParams(_compute);
 			_compute.SetFloat(ShaderConst.PROP_BROADPHASE_SQR_DISTANCE, distance * distance);
 			_compute.SetBuffer(_kernelSolve, ShaderConst.BUF_BROADPHASE_KEYS, _keys);
-			_compute.SetBuffer(_kernelSolve, ShaderConst.BUF_POSITION, _positions.P0);
+			_positions.SetBuffer(_compute, _kernelSolve);
+			_lifes.SetBuffer(_compute, _kernelSolve);
 			_grid.SetBuffer(_compute, _kernelSolve);
 			SetBuffer(_compute, _kernelSolve);
 			_compute.Dispatch(_kernelSolve, x, y, z);

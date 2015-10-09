@@ -2,8 +2,9 @@
 #define DATA_TYPES_CGINC
 
 
-
-#define COLLIDER_CAPACITY 10
+// Should Also Change this number in ShaderConst.cs
+#define CELL_CAPACITY 4
+#define COLLIDER_CAPACITY (9 * CELL_CAPACITY)
 
 struct Wall {
 	float2 n;

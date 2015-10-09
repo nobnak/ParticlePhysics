@@ -29,7 +29,7 @@ static const uint DEAD_GRID = 4294967295;
 
 static const float particleMass = 1;
 static const float impulsiveMassCoeff = particleMass / (particleMass + particleMass);
-static const float distanceEpsilon = 1e-6;
+static const float DISTANCE_EPSILON = 1e-6;
 static const float penetrationSlop = 0.01;
 static const float maxSpeed = 20.0;
 
@@ -231,22 +231,21 @@ void SolveParticleCollision(uint3 id : SV_DispatchThreadID) {
 	Collision b = Collisions[i];
 	float2 p = 0;
 	float colDist = 2.0 * particleRadius;
-	float colMinDist = -particleRadius + distanceEpsilon;
 	float cpenet = penetrationBias / dt;
 	for (uint k = 0; k < b.count; k++) {
 		uint j = b.colliders[k];
 		float tj = Lifes[j];
 		float2 xj = Positions[j];
 		float2 dp = xi - xj;
-		float d = length(dp) - colDist;
-		if (i == j || tj <= 0.0 || 0 <= d || d <= colMinDist)
+		float d = length(dp);
+		if (i == j || tj <= 0.0 || d <= DISTANCE_EPSILON || colDist <= d)
 			continue;
 		
 		float2 vj = VelocitiesCurr[j];
 		float2 v = vi - vj;
 		float2 n = normalize(dp);
 		float v0n = dot(n, v);
-		float penet = cpenet * max(0.0, -(d + penetrationSlop));
+		float penet = cpenet * max(0.0, colDist - d);
 		float pn = max(0.0, -impulsiveMassCoeff * (1.0 + elastics) * v0n + penet);
 		float2 t = float2(n.y, -n.x);
 		float v0t = dot(t, v);
@@ -333,6 +332,10 @@ void SolveCollisionDetection(uint3 id : SV_DispatchThreadID) {
 	
 	uint key0 = BroadphaseKeys[g];
 	float2 pos0 = Positions[key0];
+	float life0 = Lifes[key0];
+	if (life0 <= 0)
+		return;
+	
 	uint2 ij = GridIndex(pos0);
 	uint colliders[COLLIDER_CAPACITY];
 	uint count = 0;
@@ -341,7 +344,7 @@ void SolveCollisionDetection(uint3 id : SV_DispatchThreadID) {
 		for (int dj = -1; dj <= 1 && empty; dj++) {
 			int hash = Hash(RepeatGridIndex(ij + int2(di, dj)));
 			uint start = GridStarts[hash];
-			uint end = GridEnds[hash];
+			uint end = min(GridEnds[hash], start + CELL_CAPACITY);
 			if (start == DEAD_GRID)
 				continue;
 			
@@ -351,6 +354,10 @@ void SolveCollisionDetection(uint3 id : SV_DispatchThreadID) {
 				
 				uint key1 = BroadphaseKeys[h];
 				float2 pos1 = Positions[key1];
+				float life1 = Lifes[key1];
+				if (life1 <= 0)
+					continue;
+				
 				float2 d = pos1 - pos0;
 				if (dot(d, d) <= broadphaseSqrDistance) {
 					colliders[count++] = key1;
