@@ -1,10 +1,10 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Text;
 
 namespace ParticlePhysics {
 	public class PolygonColliderTest : MonoBehaviour {
-		public PolygonCollider[] colliders;
+		public OutlinePolygonCollider[] colliders;
 
 		PolygonColliderService _service;
 

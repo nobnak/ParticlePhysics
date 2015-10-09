@@ -18,6 +18,9 @@ namespace ParticlePhysics {
 			_walls = w;
 		}
 		public void Solve() {
+			if (_walls.Count == 0)
+				return;
+
 			_walls.Update();
 			_velocities.SetBuffer(_compute, _kernel);
 			_positions.SetBuffer(_compute, _kernel);

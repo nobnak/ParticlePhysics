@@ -1,16 +1,16 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using System.Collections;
 using InputTracking;
 
 namespace ParticlePhysics {
-	[CustomEditor(typeof(PolygonCollider))]
+	[CustomEditor(typeof(OutlinePolygonCollider))]
 	public class PolygonColliderEditor : Editor {
-		PolygonCollider _polygon;
+		OutlinePolygonCollider _polygon;
 		Vector2[] _vertices;
 
 		void OnEnable() {
-			_polygon = target as PolygonCollider;
+			_polygon = target as OutlinePolygonCollider;
 		}
 
 		public void OnSceneGUI() {

@@ -14,7 +14,6 @@ namespace ParticlePhysics {
 		public int header = 0;
 		public ComputeShader compute;
 		public ComputeShader computeSort;
-		public Transform[] wallColliders;
 		public PolygonCollider[] polygonColliders;
 
 		public Camera targetCamera;
@@ -25,12 +24,10 @@ namespace ParticlePhysics {
 		public PositionService Positions { get; private set; }
 		public VelocityService Velocities { get; private set; }
 		public LifeService Lifes { get; private set; }
-		public WallService Walls { get; private set; }
 		public PolygonColliderService Polygons { get; private set; }
 		public ConstantService Constants { get; private set; }
 		public VelocitySimulation VelSimulation { get; private set; }
 		public PositionSimulation PosSimulation { get; private set; }
-		public WallCollisionSolver WallSolver { get; private set; }
 		public PolygonCollisionSolver PolygonSolver { get; private set; }
 		public ParticleCollisionSolver ParticleSolver { get; private set; }
 		public BoundsChecker BoundsChecker { get; private set; }
@@ -51,8 +48,6 @@ namespace ParticlePhysics {
 			Collisions = new HashGrid(compute, computeSort, Lifes, Positions, GenerateGrid());
 			ParticleSolver = new ParticleCollisionSolver(compute, Velocities, Positions, Lifes, Collisions);
 			BoundsChecker = new BoundsChecker(compute, Lifes, Positions);
-			Walls = new WallService(ShaderConst.MAX_WALL_COUNT);
-			WallSolver = new WallCollisionSolver(compute, Velocities, Positions, Walls);
 			Polygons = new PolygonColliderService();
 			PolygonSolver = new PolygonCollisionSolver(compute, Velocities, Positions, Polygons);
 			
@@ -72,7 +67,6 @@ namespace ParticlePhysics {
 				Destroy(particles[i]);
 			
 			UpdateConstantData();
-			PresetWalls ();
 			_initialized = true;
 		}
 		void OnDestroy() {
@@ -84,8 +78,6 @@ namespace ParticlePhysics {
 				Lifes.Dispose();
 			if (Constants != null)
 				Constants.Dispose();
-			if (Walls != null)
-				Walls.Dispose();
 			if (Polygons != null)
 				Polygons.Dispose();
 			if (VelSimulation != null)
@@ -94,8 +86,6 @@ namespace ParticlePhysics {
 				PosSimulation.Dispose();
 			if (Collisions != null)
 				Collisions.Dispose();
-			if (WallSolver != null)
-				WallSolver.Dispose();
 			if (PolygonSolver != null)
 				PolygonSolver.Dispose();
 			if (ParticleSolver != null)
@@ -117,7 +107,6 @@ namespace ParticlePhysics {
 			if (particleCollisionEnabled)
 				Collisions.Detect(2f * constants.radius);
 			for(var i = 0; i < 10; i++) {
-				WallSolver.Solve();
 				PolygonSolver.Solve();
 				if (particleCollisionEnabled)
 					ParticleSolver.Solve();
@@ -150,12 +139,6 @@ namespace ParticlePhysics {
 			var h = 2f * targetCamera.orthographicSize;
 			var w = targetCamera.aspect * h;
 			constants.bounds = new Vector4(center.x - w, center.y - h, center.x + w, center.y + h);
-		}
-
-		public void PresetWalls() {
-			Walls.Clear();
-			foreach (var collider in wallColliders)
-				Walls.Add(collider);
 		}
 	}
 }

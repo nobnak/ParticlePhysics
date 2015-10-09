@@ -129,18 +129,20 @@ void SolveWallCollision(uint3 id : SV_DispatchThreadID) {
 		float wall_h = wall.h;
 		float dn = dot(wall_n, x) - wall.dn;
 		float dt = dot(wall_t, x) - wall.dt;
-		float dist_n = abs(dn) - wall_h;
-		float dist_t = abs(dt) - wall_w;
+		float dist_n = abs(abs(dn) - wall_h);
+		float dist_t = abs(abs(dt) - wall_w);
+		
+		if (particleRadius <= abs(dn) || particleRadius <= abs(dt))
+			continue;
 		#if 1
-		if (abs(dist_t) < abs(dist_n)) {
+		if (dist_t < dist_n) {
 			float2 tmp2 = wall_n; wall_n = wall_t; wall_t = tmp2;
 			float tmp1 = wall_w; wall_w = wall_h; wall_h = tmp1;
 			tmp1 = dn; dn = dt; dt = tmp1;
 			tmp1 = dist_n; dist_n = dist_t; dist_t = tmp1;
 		}
 		#endif
-		if (dist_n > particleRadius || dist_t > particleRadius)
-			continue;
+		
 		float penet = cpenet * max(0.0, (wall_h + particleRadius - penetrationSlop) - abs(dn));
 		float sign_dn = (dn >= 0.0 ? 1.0 : -1.0);
 		float2 n = sign_dn * wall_n;
