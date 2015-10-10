@@ -139,7 +139,21 @@ void SolvePolygonCollision(uint3 id : SV_DispatchThreadID) {
 			float2 xp = x - segment.from;
 			float l = dot(xp, segment.t);
 			
-			if (0 < l && l < segment.len) {
+			if (l < 0) {
+				Segment back = Segments[(i + segmentCount - 1) % segmentCount + polygon.segmentIndex];
+				float2 n = normalize(segment.n + back.n);
+				float2 t = float2(n.y, -n.x);
+				float d = sign(dot(n, xp)) * length(xp);
+				float dabs = abs(d);
+				if (dabs < nearDAbs) {
+					nearD = d;
+					nearDAbs = dabs;
+					nearSegment.from = segment.from;
+					nearSegment.n = n;
+					nearSegment.t = t;
+					nearSegment.len = 0;
+				}
+			} else if (l < segment.len) {
 				float d = dot(xp, segment.n);
 				float dabs = abs(d);
 				if (dabs < nearDAbs) {
@@ -150,7 +164,7 @@ void SolvePolygonCollision(uint3 id : SV_DispatchThreadID) {
 			}
 		}
 		
-		if (nearDAbs < particleRadius) {
+		if (nearD < particleRadius) {
 			float v0n = dot(v, nearSegment.n);
 			float v0t = dot(v, nearSegment.t);
 			float penet = cpenet * max(0.0, particleRadius - nearD);

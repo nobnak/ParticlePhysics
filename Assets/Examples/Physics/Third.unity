@@ -275,7 +275,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &897436118
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -298,8 +298,8 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 897436117}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: .300000012, z: 0}
-  m_LocalScale: {x: 10, y: 10, z: 1}
+  m_LocalPosition: {x: -25.6299992, y: -18.3500004, z: 0}
+  m_LocalScale: {x: 10, y: 20, z: 1}
   m_Children: []
   m_Father: {fileID: 698434670}
   m_RootOrder: 1
@@ -376,8 +376,8 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1346226415}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: .920000017, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: -6.67999983, z: 0}
+  m_LocalScale: {x: .889999986, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 698434670}
   m_RootOrder: 0
@@ -483,6 +483,8 @@ MonoBehaviour:
   computeSort: {fileID: 7200000, guid: 5571ac2ec9cc23e498e329945fdfa8e9, type: 3}
   polygonColliders:
   - {fileID: 1346226416}
+  - {fileID: 897436118}
+  - {fileID: 2052295433}
   targetCamera: {fileID: 136174181}
   containerfab: {fileID: 194522, guid: 0b323baab75d02a47ae2941a533e285d, type: 2}
   particlefabs:
@@ -504,7 +506,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!23 &2052295430
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -543,7 +545,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2052295429}
   m_LocalRotation: {x: 0, y: 0, z: .107912622, w: .994160414}
-  m_LocalPosition: {x: -.200000003, y: -30.7999992, z: 0}
+  m_LocalPosition: {x: -1.08000004, y: -19.6000004, z: 0}
   m_LocalScale: {x: 80, y: 1, z: 3}
   m_Children: []
   m_Father: {fileID: 1101846235}
