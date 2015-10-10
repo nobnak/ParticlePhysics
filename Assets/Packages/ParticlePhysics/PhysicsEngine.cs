@@ -49,7 +49,7 @@ namespace ParticlePhysics {
 			ParticleSolver = new ParticleCollisionSolver(compute, Velocities, Positions, Lifes, Collisions);
 			BoundsChecker = new BoundsChecker(compute, Lifes, Positions);
 			Polygons = new PolygonColliderService();
-			PolygonSolver = new PolygonCollisionSolver(compute, Velocities, Positions, Polygons);
+			PolygonSolver = new PolygonCollisionSolver(compute, Velocities, Positions, Lifes, Polygons);
 			
 			var particles = new GameObject[capacity];
 			foreach (var pfab in particlefabs)

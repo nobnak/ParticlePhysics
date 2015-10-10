@@ -8,7 +8,6 @@
 #pragma kernel SimulateVelocity
 #pragma kernel SimulatePosition
 #pragma kernel SimulateLife
-#pragma kernel SolveWallCollision
 #pragma kernel SolvePolygonCollision
 #pragma kernel SolveParticleCollision
 #pragma kernel ClampVelocity
@@ -56,7 +55,6 @@ RWStructuredBuffer<uint> GridEnds;
 RWStructuredBuffer<Collision> Collisions;
 StructuredBuffer<float2> Uploader;
 StructuredBuffer<float> UploaderFloat;
-StructuredBuffer<Wall> Walls;
 StructuredBuffer<uint> BroadphaseKeys;
 StructuredBuffer<float> DragCoeffs;
 StructuredBuffer<Polygon> Polygons;
@@ -114,50 +112,11 @@ void SimulateLife(uint3 id : SV_DispatchThreadID) {
 	Lifes[i] = max(0.0, Lifes[i] - dt);
 }
 [numthreads(WARP_SIZE,1,1)]
-void SolveWallCollision(uint3 id : SV_DispatchThreadID) {
-	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
-	float2 x = Positions[i];
-	float2 v = VelocitiesCurr[i];
-	
-	float2 p = 0;
-	float cpenet = penetrationBias / dt;
-	for (int j = 0; j < wallCount; j++) {
-		Wall wall = Walls[j];
-		float2 wall_n = wall.n;
-		float2 wall_t = wall.t;
-		float wall_w = wall.w;
-		float wall_h = wall.h;
-		float dn = dot(wall_n, x) - wall.dn;
-		float dt = dot(wall_t, x) - wall.dt;
-		float dist_n = abs(abs(dn) - wall_h);
-		float dist_t = abs(abs(dt) - wall_w);
-		
-		if (particleRadius <= abs(dn) || particleRadius <= abs(dt))
-			continue;
-		#if 1
-		if (dist_t < dist_n) {
-			float2 tmp2 = wall_n; wall_n = wall_t; wall_t = tmp2;
-			float tmp1 = wall_w; wall_w = wall_h; wall_h = tmp1;
-			tmp1 = dn; dn = dt; dt = tmp1;
-			tmp1 = dist_n; dist_n = dist_t; dist_t = tmp1;
-		}
-		#endif
-		
-		float penet = cpenet * max(0.0, (wall_h + particleRadius - penetrationSlop) - abs(dn));
-		float sign_dn = (dn >= 0.0 ? 1.0 : -1.0);
-		float2 n = sign_dn * wall_n;
-		float v0n = dot(wall_n, v);
-		float pn = max(0.0, -(1.0 + elastics) * (sign_dn * v0n) + penet);
-		float v0t = dot(wall_t, v);
-		float pt = clamp(-v0t, -friction * pn, friction * pn);
-		p += pn * n + pt * wall_t;
-	}
-	
-	VelocitiesNext[i] = v + p;
-}
-[numthreads(WARP_SIZE,1,1)]
 void SolvePolygonCollision(uint3 id : SV_DispatchThreadID) {
 	uint i = dot(id.xy, uint2(1, MAX_X_THREADS));
+	float l = Lifes[i];
+	if (l <= 0.0)
+		return;
 	float2 x = Positions[i];
 	float2 v = VelocitiesCurr[i];
 	float cpenet = penetrationBias / dt;	
@@ -167,7 +126,7 @@ void SolvePolygonCollision(uint3 id : SV_DispatchThreadID) {
 	for (int j = 0; j < polygonCount; j++) {
 		Polygon polygon = Polygons[j];
 		
-		float2 distFromPoly = abs(x - polygon.bounds.xy);
+		float2 distFromPoly = abs(x - polygon.bounds.xy); 
 		if (any(distFromPoly > (polygon.bounds.zw + particleRadius)))
 			continue;
 			
@@ -180,22 +139,7 @@ void SolvePolygonCollision(uint3 id : SV_DispatchThreadID) {
 			float2 xp = x - segment.from;
 			float l = dot(xp, segment.t);
 			
-			if (l < 0) {
-				Segment next = Segments[(i + 1) % segmentCount + polygon.segmentIndex];
-				float2 xp = x - segment.from;
-				float2 n = normalize(segment.n + next.n);
-				float d = sign(dot(xp, n)) * length(xp);
-				float dabs = abs(d);
-				if (dabs < nearDAbs) {
-					nearD = d;
-					nearDAbs = dabs;
-					float2 t = float2(n.y, -n.x);
-					nearSegment.from = segment.from;
-					nearSegment.len = 0;
-					nearSegment.n = n;
-					nearSegment.t = t;
-				}
-			} else if (l < segment.len) {
+			if (0 < l && l < segment.len) {
 				float d = dot(xp, segment.n);
 				float dabs = abs(d);
 				if (dabs < nearDAbs) {
@@ -206,7 +150,7 @@ void SolvePolygonCollision(uint3 id : SV_DispatchThreadID) {
 			}
 		}
 		
-		if (nearDAbs < MAX_VALUE && nearD < particleRadius) {
+		if (nearDAbs < particleRadius) {
 			float v0n = dot(v, nearSegment.n);
 			float v0t = dot(v, nearSegment.t);
 			float penet = cpenet * max(0.0, particleRadius - nearD);
@@ -233,7 +177,6 @@ void SolveParticleCollision(uint3 id : SV_DispatchThreadID) {
 	Collision b = Collisions[i];
 	float2 p = 0;
 	float colDist = 2.0 * particleRadius;
-	float cpenet = penetrationBias / dt;
 	for (uint k = 0; k < b.count; k++) {
 		uint j = b.colliders[k];
 		float tj = Lifes[j];
@@ -247,12 +190,12 @@ void SolveParticleCollision(uint3 id : SV_DispatchThreadID) {
 		float2 v = vi - vj;
 		float2 n = normalize(dp);
 		float v0n = dot(n, v);
-		float penet = cpenet * max(0.0, colDist - d);
-		float pn = max(0.0, -impulsiveMassCoeff * (1.0 + elastics) * v0n + penet);
+		float penet = penetrationBias * max(0.0, colDist - d);
+		float pn = max(0.0, -impulsiveMassCoeff * (1.0 + elastics) * v0n);
 		float2 t = float2(n.y, -n.x);
 		float v0t = dot(t, v);
 		float pt = clamp(-v0t, -friction * pn, friction * pn);
-		p += pn * n + pt * t;
+		p += (pn + penet) * n + pt * t;
 	}
 	VelocitiesNext[i] = vi + p;
 }

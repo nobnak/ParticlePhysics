@@ -6,14 +6,6 @@
 #define CELL_CAPACITY 4
 #define COLLIDER_CAPACITY (9 * CELL_CAPACITY)
 
-struct Wall {
-	float2 n;
-	float2 t;
-	float dn;
-	float dt;
-	float w;
-	float h;
-};
 struct Collision {
 	uint count;
 	uint colliders[COLLIDER_CAPACITY];
@@ -26,9 +18,9 @@ struct Polygon {
 };
 struct Segment {
 	float2 from;
-	float len;
 	float2 n;
 	float2 t;
+	float len;
 };
 
 #endif

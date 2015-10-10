@@ -108,10 +108,10 @@ namespace ParticlePhysics {
 		[StructLayout(LayoutKind.Sequential)]
 		public struct Segment {
 			public Vector2 from;
-			public float length;
 			public Vector2 n;
 			public Vector2 t;
-			
+			public float length;
+
 			public Segment(Vector2 from, float length, Vector2 n, Vector2 t) {
 				this.from = from; this.length = length; this.n = n; this.t = t;
 			}
