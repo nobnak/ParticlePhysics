@@ -6,6 +6,7 @@ using System.Text;
 public class Third : MonoBehaviour {
 	public bool fall = true;
 	public float particleGenerationSpeed = 100f;
+	public float particleLife = 100f;
 	public Vector2 angularSpeedRange = new Vector2(0f, 1f);
 
 	public PhysicsEngine physics;
@@ -48,7 +49,7 @@ public class Third : MonoBehaviour {
 				var tr = emitters[Random.Range(0, emitters.Length)];
 				posisions[i] = tr.TransformPoint(posLocal);
 			}
-			physics.AddParticle(posisions , 100f);
+			physics.AddParticle(posisions , particleLife);
 		}
 	}
 }

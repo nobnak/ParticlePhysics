@@ -439,6 +439,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fall: 1
   particleGenerationSpeed: 5000
+  particleLife: 1000
   angularSpeedRange: {x: 0, y: 1}
   physics: {fileID: 1889913063}
   computeRotation: {fileID: 7200000, guid: f2f0bfdb12c00b64e856af6ef0e5f742, type: 3}

@@ -10,29 +10,7 @@ namespace ParticlePhysics {
 
 		void OnDrawGizmos() {
 			ManualUpdate();
-			if (!_effective)
-				return;
-
-			Gizmos.color = Color.cyan;
-			Gizmos.DrawWireCube(_bounds.center, _bounds.size);
-			Gizmos.color = Color.white;
-			for (var i = 0; i < _segments.Length; i++) {
-				var s = _segments[i];
-				if (s.Validate()) {
-					Gizmos.DrawRay(s.from, s.length * s.t);
-				} else {
-					Gizmos.color = Color.red;
-					#if UNITY_EDITOR
-					var size = UnityEditor.HandleUtility.GetHandleSize(s.from);
-					Gizmos.DrawSphere(s.from, 0.2f * size);
-					#endif
-				}
-			}
-			Gizmos.color = Color.green;
-			for (var i = 0; i < _segments.Length; i++) {
-				var s = _segments[i];
-				Gizmos.DrawRay(s.from + 0.5f * s.length * s.t, s.n);
-			}
+			DrawGizmos ();
 		}
 
 		public override void ManualUpdate() {
