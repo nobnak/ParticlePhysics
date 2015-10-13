@@ -6,7 +6,7 @@
 
 [Unity Package](Html/ParticlePhysics.unitypackage)
 
-[![Vimeo](Html/GPUSand.png)](https://vimeo.com/137930819)
+[![Vimeo](Html/SpriteColliderDemo.png)](https://vimeo.com/142264303)
 
 ## References
  1. [Real-Time Rigid Body Simulation on GPUs, GPU Gems 3 Ch. 29](https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch29.html)
