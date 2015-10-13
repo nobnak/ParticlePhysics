@@ -26,8 +26,10 @@ namespace ParticlePhysics {
 				_bounds.yMax = p.y;
 		}
 		protected virtual void DrawGizmos() {
-			if (!_effective)
+			if (!_effective) {
+				Debug.Log("Not effective");
 				return;
+			}
 			
 			Gizmos.color = Color.cyan;
 			Gizmos.DrawWireCube(_bounds.center, _bounds.size);
