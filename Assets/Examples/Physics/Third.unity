@@ -300,6 +300,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd1aae3528964854cafbf9bbba04a4d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  degenerationDistance: .400000006
 --- !u!212 &836354871
 SpriteRenderer:
   m_ObjectHideFlags: 0

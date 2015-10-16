@@ -5,6 +5,8 @@ using System.Text;
 namespace ParticlePhysics {
 	[RequireComponent(typeof(SpriteRenderer))]
 	public class SpritePolygonCollider : PolygonCollider {
+		public float degenerationDistance = 0.1f;
+
 		SpriteRenderer _spriteRend;
 		ushort[] _outlines;
 		
@@ -31,7 +33,7 @@ namespace ParticlePhysics {
 				return;
 			if (_outlines == null)
 				_outlines = FindOutlines (_spriteRend.sprite.vertices, _spriteRend.sprite.triangles);
-			var len = _outlines.Length / 2;
+			var len = _outlines.Length;
 			if (len == 0)
 				return;
 			if (_segments == null || _segments.Length != len)
@@ -39,11 +41,14 @@ namespace ParticlePhysics {
 
 			var sprite = _spriteRend.sprite;
 			var vertices = sprite.vertices;
-			var from = transform.TransformPoint (vertices [_outlines [0]]);
+			var t0 = _outlines [0];
+			var from = transform.TransformPoint(vertices[t0]);
 			InitBoundary (from);
 			for (var i = 0; i < len; i++) {
-				from = transform.TransformPoint (vertices [_outlines [2 * i]]);
-				var to = transform.TransformPoint (vertices [_outlines [2 * i + 1]]);
+				from = transform.TransformPoint(vertices [t0]);
+				var t1 = _outlines[(i+1) % len];
+				var to = transform.TransformPoint(vertices[t1]);
+				t0 = t1;
 				_segments [i] = PolygonColliderService.Segment.Generate (from, to);
 				ExpandBoundary(from);
 				ExpandBoundary(to);
@@ -75,8 +80,20 @@ namespace ParticlePhysics {
 				var h = outlines[t];
 				outlines.Remove(t);
 				result.Add(h.t0);
-				result.Add(t = h.t1);
+				t = h.t1;
 			}
+
+			var k = 0;
+			while (k < result.Count) {
+				var t0 = result[k];
+				var t1 = result[(k + 1) % outlines.Count];
+				var d = vertices[t0] - vertices[t1];
+				if (d.sqrMagnitude < (degenerationDistance * degenerationDistance))
+					result.RemoveAt(k);
+				else
+					k++;
+			}
+
 			return result.ToArray ();
 		}
 
